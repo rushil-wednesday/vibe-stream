@@ -26,8 +26,10 @@ jobs:
         with:
           run_install: |
             - recursive: true
-            - args: [--frozen-lockfile]
+              args: [--frozen-lockfile]
 
+      - name: Type check
+        run: pnpm run typecheck
       - name: Lint check
         run: pnpm run lint
       - name: Format check
