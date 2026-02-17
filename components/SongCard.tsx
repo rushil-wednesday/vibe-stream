@@ -70,7 +70,7 @@ export function SongCard({ song }: SongCardProps) {
             aria-label={isThisPlaying ? "Pause" : "Play"}
             className="flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-gray-900 opacity-0 shadow-lg transition-opacity duration-200 group-hover:opacity-100 hover:bg-white focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:outline-none"
           >
-            {isThisPlaying ? <PauseIcon /> : <PlayIcon />}
+            {isThisPlaying ? <PauseIcon className="h-6 w-6" /> : <PlayIcon className="h-6 w-6" />}
           </button>
         </div>
 
