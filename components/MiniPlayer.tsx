@@ -6,6 +6,7 @@ import Image from "next/image"
 
 import { ChevronDownIcon, PauseIcon, PlayIcon, SkipBack10Icon, SkipForward10Icon, VolumeIcon } from "assets/icons"
 import { Slider } from "components/ui/Slider"
+import { ARTWORK_SIZE_LARGE, ARTWORK_SIZE_SMALL, SKIP_SECONDS } from "constants/player"
 import { useAudio } from "hooks/useAudio"
 import { usePlayerStore } from "store/usePlayerStore"
 import { getArtworkUrl } from "types/itunes"
@@ -34,8 +35,8 @@ export function MiniPlayer() {
   if (!currentSong) return null
 
   const currentSeconds = progress * duration
-  const artworkSmall = getArtworkUrl(currentSong.artworkUrl100, 80)
-  const artworkLarge = getArtworkUrl(currentSong.artworkUrl100, 500)
+  const artworkSmall = getArtworkUrl(currentSong.artworkUrl100, ARTWORK_SIZE_SMALL)
+  const artworkLarge = getArtworkUrl(currentSong.artworkUrl100, ARTWORK_SIZE_LARGE)
 
   function handlePlayPause() {
     if (isPlaying) pause()
@@ -171,7 +172,7 @@ export function MiniPlayer() {
                 <div className="flex items-center gap-3">
                   <button
                     type="button"
-                    onClick={() => handleSkip(-10)}
+                    onClick={() => handleSkip(-SKIP_SECONDS)}
                     aria-label="Skip back 10 seconds"
                     className="flex h-9 w-9 items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
                   >
@@ -189,7 +190,7 @@ export function MiniPlayer() {
 
                   <button
                     type="button"
-                    onClick={() => handleSkip(10)}
+                    onClick={() => handleSkip(SKIP_SECONDS)}
                     aria-label="Skip forward 10 seconds"
                     className="flex h-9 w-9 items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
                   >
