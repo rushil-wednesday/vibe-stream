@@ -67,16 +67,17 @@ export function MiniPlayer() {
           "border-t border-gray-200 dark:border-gray-800",
           "bg-white/95 dark:bg-gray-950/95",
           "backdrop-blur-md",
-          "transition-all duration-300 ease-in-out",
-          expanded ? "h-auto md:h-72" : "h-[68px]",
+          "overflow-hidden",
+          "transition-[max-height] duration-300 ease-in-out",
+          expanded ? "max-h-[600px]" : "max-h-[68px]",
         ].join(" ")}
       >
         {/* Thin progress bar along top edge (visible in minimised state) */}
         {!expanded && (
-          <div className="absolute top-0 right-0 left-0 h-0.5 bg-gray-200 dark:bg-gray-800">
+          <div className="absolute top-0 right-0 left-0 h-0.5 overflow-hidden bg-gray-200 dark:bg-gray-800">
             <div
-              className="h-full bg-violet-500 transition-all duration-300 dark:bg-violet-400"
-              style={{ width: `${progress * 100}%` }}
+              className="h-full origin-left bg-violet-500 transition-transform duration-300 dark:bg-violet-400"
+              style={{ transform: `scaleX(${progress})` }}
             />
           </div>
         )}
@@ -88,7 +89,7 @@ export function MiniPlayer() {
           role="button"
           tabIndex={0}
           aria-label="Expand player"
-          onKeyDown={(e) => e.key === "Enter" && setExpanded(true)}
+          onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && setExpanded(true)}
         >
           {/* Artwork */}
           <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg">
