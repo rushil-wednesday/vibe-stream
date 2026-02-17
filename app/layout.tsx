@@ -1,5 +1,7 @@
 import "styles/tailwind.css"
 
+import { MiniPlayer } from "components/MiniPlayer"
+
 /**
  * Flash-Of-Wrong-Theme (FOWT) prevention script.
  * Runs synchronously before React hydrates — reads localStorage and applies
@@ -29,7 +31,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* FOWT prevention — must be the first script in <head> */}
         <script dangerouslySetInnerHTML={{ __html: fowt }} />
       </head>
-      <body>{children}</body>
+      {/* pb-[68px] prevents content from hiding behind the MiniPlayer bar */}
+      <body className="pb-[68px]">
+        {children}
+        {/* MiniPlayer is at root so it persists across all page navigations */}
+        <MiniPlayer />
+      </body>
     </html>
   )
 }
