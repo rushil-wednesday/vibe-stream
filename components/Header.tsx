@@ -21,7 +21,7 @@ export function Header() {
             className="h-7 w-7"
             aria-hidden="true"
           >
-            <rect width="32" height="32" rx="8" fill="#6C5CE7" />
+            <rect width="32" height="32" rx="8" fill="var(--accent)" />
             <path
               d="M8 20 L12 10 L16 18 L20 8 L24 20"
               stroke="white"
