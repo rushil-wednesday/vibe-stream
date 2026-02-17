@@ -1,8 +1,7 @@
 "use client"
 
-import React from "react"
-
 import Image from "next/image"
+import React from "react"
 
 import { Card } from "components/ui/Card"
 import { ARTWORK_SIZE_CARD, EQ_BAR_BASE_DURATION, EQ_BAR_BASE_HEIGHT, EQ_BAR_DURATION_INCREMENT, EQ_BAR_HEIGHT_INCREMENT } from "constants/player"
@@ -65,7 +64,7 @@ export function SongCard({ song }: SongCardProps) {
       role="button"
       tabIndex={0}
       aria-label={`${isThisPlaying ? "Pause" : "Play"} ${song.trackName} by ${song.artistName}`}
-      onKeyDown={(e) => e.key === "Enter" && play(song)}
+      onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && play(song)}
     >
       {/* Artwork */}
       <div className="relative aspect-square w-full overflow-hidden bg-gray-100 dark:bg-gray-800">
