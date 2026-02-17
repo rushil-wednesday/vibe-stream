@@ -4,7 +4,7 @@ import React, { useState } from "react"
 
 import Image from "next/image"
 
-import { ChevronDownIcon, PauseIcon, PlayIcon, SkipBack10Icon, SkipForward10Icon } from "assets/icons"
+import { ChevronDownIcon, PauseIcon, PlayIcon, SkipBack10Icon, SkipForward10Icon, VolumeIcon } from "assets/icons"
 import { Slider } from "components/ui/Slider"
 import { useAudio } from "hooks/useAudio"
 import { usePlayerStore } from "store/usePlayerStore"
@@ -195,20 +195,24 @@ export function MiniPlayer() {
                   >
                     <SkipForward10Icon />
                   </button>
+                </div>
 
-                  {/* Volume (desktop only) */}
-                  <div className="ml-auto hidden items-center gap-2 md:flex">
-                    <span className="text-xs text-gray-400">Vol</span>
-                    <Slider
-                      variant="volume"
-                      min={0}
-                      max={100}
-                      step={1}
-                      value={[volume * 100]}
-                      onValueChange={([val]) => setVolume((val ?? 0) / 100)}
-                      aria-label="Volume"
-                    />
-                  </div>
+                {/* Volume row — visible on all screen sizes */}
+                <div className="flex items-center gap-2">
+                  <VolumeIcon muted={volume === 0} />
+                  <Slider
+                    variant="volume"
+                    min={0}
+                    max={100}
+                    step={1}
+                    value={[volume * 100]}
+                    onValueChange={([val]) => setVolume((val ?? 0) / 100)}
+                    aria-label="Volume"
+                    className="max-w-full"
+                  />
+                  <span className="w-7 shrink-0 text-right text-xs text-gray-400 tabular-nums dark:text-gray-500">
+                    {Math.round(volume * 100)}%
+                  </span>
                 </div>
               </div>
             </div>
