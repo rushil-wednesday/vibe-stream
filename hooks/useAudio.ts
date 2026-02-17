@@ -17,7 +17,7 @@ import { usePlayerStore } from "store/usePlayerStore"
  *   to the audio element, avoiding the stale-ref trap of depending on [seek]
  */
 export function useAudio() {
-  const { currentSong, isPlaying, volume, setProgress, pause, setVolume } = usePlayerStore()
+  const { currentSong, isPlaying, volume, setProgress, pause, resume, setVolume } = usePlayerStore()
   const prevSongRef = useRef<number | null>(null)
   // Tracks the last progress value written by the audio timeupdate event so we
   // can distinguish audio-driven updates from user-initiated seeks/skips.
@@ -49,6 +49,16 @@ export function useAudio() {
         setVolume(audio.volume)
       })
 
+      // Sync play/pause state when the OS or keyboard media keys control the
+      // audio element directly (bypassing the store).
+      const offPlay = audio.on("play", () => {
+        if (!usePlayerStore.getState().isPlaying) resume()
+      })
+
+      const offPause = audio.on("pause", () => {
+        if (usePlayerStore.getState().isPlaying) pause()
+      })
+
       // Subscribe to store progress changes to forward user seeks to audio element.
       // A Zustand subscription avoids the stale-function-ref problem of useEffect([seek]).
       const unsubSeek = usePlayerStore.subscribe((state, prev) => {
@@ -62,13 +72,15 @@ export function useAudio() {
         offTimeUpdate()
         offEnded()
         offVolumeChange()
+        offPlay()
+        offPause()
         unsubSeek()
       }
     }
 
     void setup()
     return () => cleanup?.()
-  }, [setProgress, pause, setVolume])
+  }, [setProgress, pause, resume, setVolume])
 
   // React to song / playback state changes
   useEffect(() => {
