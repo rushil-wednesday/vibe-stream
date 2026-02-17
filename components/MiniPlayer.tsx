@@ -32,6 +32,22 @@ function ChevronDownIcon() {
   )
 }
 
+function VolumeIcon({ muted }: { muted: boolean }) {
+  return muted ? (
+    <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 shrink-0" aria-hidden="true">
+      <path d="M13 3a1 1 0 0 0-1.707-.707L6.586 7H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h2.586l4.707 4.707A1 1 0 0 0 13 21V3z" />
+      <line x1="23" y1="9" x2="17" y2="15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <line x1="17" y1="9" x2="23" y2="15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  ) : (
+    <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 shrink-0" aria-hidden="true">
+      <path d="M13 3a1 1 0 0 0-1.707-.707L6.586 7H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h2.586l4.707 4.707A1 1 0 0 0 13 21V3z" />
+      <path d="M16.5 7.5a5 5 0 0 1 0 9" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <path d="M19.5 4.5a9 9 0 0 1 0 15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 function SkipBack10Icon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5" aria-hidden="true">
@@ -241,20 +257,24 @@ export function MiniPlayer() {
                   >
                     <SkipForward10Icon />
                   </button>
+                </div>
 
-                  {/* Volume (desktop only) */}
-                  <div className="ml-auto hidden items-center gap-2 md:flex">
-                    <span className="text-xs text-gray-400">Vol</span>
-                    <Slider
-                      variant="volume"
-                      min={0}
-                      max={100}
-                      step={1}
-                      value={[volume * 100]}
-                      onValueChange={([val]) => setVolume((val ?? 0) / 100)}
-                      aria-label="Volume"
-                    />
-                  </div>
+                {/* Volume row — visible on all screen sizes */}
+                <div className="flex items-center gap-2">
+                  <VolumeIcon muted={volume === 0} />
+                  <Slider
+                    variant="volume"
+                    min={0}
+                    max={100}
+                    step={1}
+                    value={[volume * 100]}
+                    onValueChange={([val]) => setVolume((val ?? 0) / 100)}
+                    aria-label="Volume"
+                    className="max-w-full"
+                  />
+                  <span className="w-7 shrink-0 text-right text-xs text-gray-400 tabular-nums dark:text-gray-500">
+                    {Math.round(volume * 100)}%
+                  </span>
                 </div>
               </div>
             </div>
