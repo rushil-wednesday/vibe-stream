@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react"
 
-import { fetchDefaultSongs, fetchSongs } from "lib/itunes"
+import { fetchSongs, pickDefaultQuery } from "lib/itunes"
 import type { ITunesSong } from "types/itunes"
 
 const DEBOUNCE_MS = 500
@@ -27,7 +27,8 @@ interface UseItunesSearchResult {
  * - 500 ms debounce on the search call to minimise API requests
  * - Uses AbortController to cancel in-flight requests on new input
  * - Reverts to curated default songs when query is cleared
- * - Exposes nextPage / prevPage for paginating through search results
+ * - Exposes nextPage / prevPage for paginating through all results
+ * - Default view paginates consistently by storing the picked query for the session
  */
 export function useItunesSearch(): UseItunesSearchResult {
   const [songs, setSongs] = useState<ITunesSong[]>([])
@@ -37,6 +38,10 @@ export function useItunesSearch(): UseItunesSearchResult {
   const [hasMore, setHasMore] = useState(false)
   const [currentQuery, setCurrentQuery] = useState("")
 
+  // Stores the actual query used for fetching — for empty queries this is the
+  // randomly picked default genre so pagination stays consistent within a session
+  const activeQueryRef = useRef<string>("")
+
   const abortRef = useRef<AbortController | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -45,13 +50,10 @@ export function useItunesSearch(): UseItunesSearchResult {
     setError(null)
     try {
       const offset = (pageNum - 1) * PAGE_SIZE
-      const results = query.trim()
-        ? await fetchSongs(query, PAGE_SIZE, offset, signal)
-        : await fetchDefaultSongs(signal)
+      const results = await fetchSongs(query, PAGE_SIZE, offset, signal)
       if (!signal.aborted) {
         setSongs(results)
-        // Only show pagination for explicit searches (not default homepage view)
-        setHasMore(query.trim() ? results.length === PAGE_SIZE : false)
+        setHasMore(results.length === PAGE_SIZE)
       }
     } catch (err) {
       if (!signal.aborted) {
@@ -64,11 +66,13 @@ export function useItunesSearch(): UseItunesSearchResult {
     }
   }, [])
 
-  // Fetch default songs on mount
+  // Fetch default songs on mount using a consistently stored query
   useEffect(() => {
+    const defaultQuery = pickDefaultQuery()
+    activeQueryRef.current = defaultQuery
     const controller = new AbortController()
     abortRef.current = controller
-    void doFetch("", 1, controller.signal)
+    void doFetch(defaultQuery, 1, controller.signal)
     return () => controller.abort()
   }, [doFetch])
 
@@ -77,6 +81,10 @@ export function useItunesSearch(): UseItunesSearchResult {
       if (debounceRef.current) clearTimeout(debounceRef.current)
       if (abortRef.current) abortRef.current.abort()
 
+      // Pick a new default query when clearing the search box
+      const resolvedQuery = query.trim() ? query : pickDefaultQuery()
+      activeQueryRef.current = resolvedQuery
+
       // Reset pagination on new query
       setPage(1)
       setCurrentQuery(query)
@@ -84,7 +92,7 @@ export function useItunesSearch(): UseItunesSearchResult {
       debounceRef.current = setTimeout(() => {
         const controller = new AbortController()
         abortRef.current = controller
-        void doFetch(query, 1, controller.signal)
+        void doFetch(resolvedQuery, 1, controller.signal)
       }, DEBOUNCE_MS)
     },
     [doFetch]
@@ -97,8 +105,8 @@ export function useItunesSearch(): UseItunesSearchResult {
     setPage(newPage)
     const controller = new AbortController()
     abortRef.current = controller
-    void doFetch(currentQuery, newPage, controller.signal)
-  }, [hasMore, page, currentQuery, doFetch])
+    void doFetch(activeQueryRef.current, newPage, controller.signal)
+  }, [hasMore, page, doFetch])
 
   const prevPage = useCallback(() => {
     if (page <= 1) return
@@ -107,8 +115,8 @@ export function useItunesSearch(): UseItunesSearchResult {
     setPage(newPage)
     const controller = new AbortController()
     abortRef.current = controller
-    void doFetch(currentQuery, newPage, controller.signal)
-  }, [page, currentQuery, doFetch])
+    void doFetch(activeQueryRef.current, newPage, controller.signal)
+  }, [page, doFetch])
 
   return { songs, isLoading, error, page, hasMore, search, nextPage, prevPage }
 }
