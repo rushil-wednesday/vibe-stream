@@ -5,8 +5,8 @@ on:
       - main
       - master
       - develop
-  pull_request: null
-  workflow_dispatch: null
+  pull_request: 
+  workflow_dispatch: 
 jobs:
   test:
     timeout-minutes: 60
@@ -24,7 +24,7 @@ jobs:
         with:
           run_install: |
             - recursive: true
-            - args: [--frozen-lockfile]
+              args: [--frozen-lockfile]
 
       - name: Install Playwright Browsers
         run: pnpm playwright install --with-deps
