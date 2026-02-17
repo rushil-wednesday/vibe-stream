@@ -1,7 +1,8 @@
 "use client"
 
-import Image from "next/image"
 import React, { useState } from "react"
+
+import Image from "next/image"
 
 import { Slider } from "components/ui/Slider"
 import { useAudio } from "hooks/useAudio"
