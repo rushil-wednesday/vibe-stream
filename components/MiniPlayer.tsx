@@ -8,17 +8,17 @@ import { useAudio } from "hooks/useAudio"
 import { usePlayerStore } from "store/usePlayerStore"
 import { getArtworkUrl } from "types/itunes"
 
-function PlayIcon() {
+function PlayIcon({ className = "h-5 w-5" }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
       <path d="M8 5.14v14l11-7-11-7z" />
     </svg>
   )
 }
 
-function PauseIcon() {
+function PauseIcon({ className = "h-5 w-5" }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
       <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
     </svg>
   )
@@ -48,24 +48,38 @@ function VolumeIcon({ muted }: { muted: boolean }) {
   )
 }
 
-function SkipBack10Icon() {
+/**
+ * Skip-back 10 s — 270° counter-clockwise arc (3 o'clock → 12 o'clock),
+ * arrowhead at 12 o'clock pointing LEFT to indicate backward direction.
+ * Center (12,12), radius 8.
+ */
+function SkipBack10Icon({ className = "h-6 w-6" }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-6 w-6" aria-hidden="true">
-      <path d="M11.5 18a7.5 7.5 0 1 1 5.25-12.75" />
-      <path d="m2 12 4-4-4-4" />
-      <text x="8.5" y="15" fontSize="7" fill="currentColor" stroke="none" fontWeight="bold">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className} aria-hidden="true">
+      {/* 270° CCW arc: (20,12) → (12,4) */}
+      <path d="M20 12A8 8 0 1 0 12 4" strokeLinecap="round" />
+      {/* Arrowhead at (12,4) pointing LEFT — wings extend right */}
+      <path d="M13.5 2.5L12 4L13.5 5.5" strokeLinecap="round" strokeLinejoin="round" />
+      <text x="12" y="14.5" fontSize="6.5" fill="currentColor" stroke="none" fontWeight="bold" textAnchor="middle">
         10
       </text>
     </svg>
   )
 }
 
-function SkipForward10Icon() {
+/**
+ * Skip-forward 10 s — 270° clockwise arc (9 o'clock → 12 o'clock),
+ * arrowhead at 12 o'clock pointing RIGHT to indicate forward direction.
+ * Center (12,12), radius 8.
+ */
+function SkipForward10Icon({ className = "h-6 w-6" }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-6 w-6" aria-hidden="true">
-      <path d="M12.5 18a7.5 7.5 0 1 0-5.25-12.75" />
-      <path d="m22 8-4 4 4 4" />
-      <text x="8.5" y="15" fontSize="7" fill="currentColor" stroke="none" fontWeight="bold">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className} aria-hidden="true">
+      {/* 270° CW arc: (4,12) → (12,4) */}
+      <path d="M4 12A8 8 0 1 1 12 4" strokeLinecap="round" />
+      {/* Arrowhead at (12,4) pointing RIGHT — wings extend left */}
+      <path d="M10.5 2.5L12 4L10.5 5.5" strokeLinecap="round" strokeLinejoin="round" />
+      <text x="12" y="14.5" fontSize="6.5" fill="currentColor" stroke="none" fontWeight="bold" textAnchor="middle">
         10
       </text>
     </svg>
@@ -86,16 +100,13 @@ function formatTime(seconds: number): string {
 /**
  * MiniPlayer — fixed bottom bar that expands to a full player panel.
  *
- * Minimised state: artwork thumbnail + track info + play/pause + progress bar.
- * Expanded state:
- *   Mobile — near-fullscreen overlay with large centred artwork, track info,
- *            seek bar, centred playback controls, and volume slider.
- *   Desktop — compact bottom panel (max-w-2xl) with side-by-side artwork +
- *             controls layout; playback buttons centred.
- * Renders null when no song has been loaded (currentSong is null).
+ * Minimised state: artwork + track info + controls, all centred within max-w-2xl.
+ * Expanded state: single centred column for both mobile and desktop (max-w-2xl).
+ *   Mobile  — artwork 58 vw / 240 px max, buttons 50% larger than desktop.
+ *   Desktop — artwork 160 px, standard button sizes.
+ * Renders null when no song has been loaded.
  */
 export function MiniPlayer() {
-  // Mount audio bridge once here — persists across all page navigations
   useAudio()
 
   const { currentSong, isPlaying, progress, duration, volume, pause, resume, seek, setVolume } = usePlayerStore()
@@ -121,7 +132,6 @@ export function MiniPlayer() {
 
   return (
     <>
-      {/* Backdrop for expanded state on mobile */}
       {expanded && (
         <div
           className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm md:hidden"
@@ -135,13 +145,12 @@ export function MiniPlayer() {
           "fixed right-0 bottom-0 left-0 z-50",
           "border-t border-gray-200 dark:border-gray-800",
           "bg-white/95 dark:bg-gray-950/95",
-          "backdrop-blur-md",
-          "overflow-hidden",
+          "overflow-hidden backdrop-blur-md",
           "transition-[max-height] duration-300 ease-in-out",
-          expanded ? "max-h-[92dvh] md:max-h-[340px]" : "max-h-[68px]",
+          expanded ? "max-h-[92dvh] md:max-h-[560px]" : "max-h-[68px]",
         ].join(" ")}
       >
-        {/* Thin progress bar along top edge (visible in minimised state) */}
+        {/* Thin progress stripe along top edge (minimised only) */}
         {!expanded && (
           <div className="absolute top-0 right-0 left-0 h-0.5 overflow-hidden bg-gray-200 dark:bg-gray-800">
             <div
@@ -153,69 +162,72 @@ export function MiniPlayer() {
 
         {/* ── MINIMISED BAR ── */}
         <div
-          className={["flex h-[68px] cursor-pointer items-center gap-3 px-4", expanded ? "hidden" : "flex"].join(" ")}
+          className={["h-[68px] cursor-pointer", expanded ? "hidden" : "block"].join(" ")}
           onClick={() => setExpanded(true)}
           role="button"
           tabIndex={0}
           aria-label="Expand player"
           onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && setExpanded(true)}
         >
-          {/* Artwork */}
-          <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg">
-            <Image src={artworkSmall} alt="" fill sizes="40px" className="object-cover" unoptimized />
-          </div>
+          {/* Content centred within max-w-2xl */}
+          <div className="mx-auto flex h-full max-w-2xl items-center gap-3 px-4">
+            {/* Artwork */}
+            <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg">
+              <Image src={artworkSmall} alt="" fill sizes="40px" className="object-cover" unoptimized />
+            </div>
 
-          {/* Track info */}
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-semibold text-gray-900 dark:text-gray-100">{currentSong.trackName}</p>
-            <p className="truncate text-xs text-gray-500 dark:text-gray-400">{currentSong.artistName}</p>
-          </div>
+            {/* Track info */}
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold text-gray-900 dark:text-gray-100">{currentSong.trackName}</p>
+              <p className="truncate text-xs text-gray-500 dark:text-gray-400">{currentSong.artistName}</p>
+            </div>
 
-          {/* Centred controls: skip back, play/pause, skip forward */}
-          <div className="flex items-center justify-center gap-1">
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation()
-                handleSkip(-SKIP_SECONDS)
-              }}
-              aria-label="Skip back 10 seconds"
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
-            >
-              <SkipBack10Icon />
-            </button>
+            {/* Controls — skip back, play/pause, skip forward */}
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleSkip(-SKIP_SECONDS)
+                }}
+                aria-label="Skip back 10 seconds"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+              >
+                <SkipBack10Icon />
+              </button>
 
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation()
-                handlePlayPause()
-              }}
-              aria-label={isPlaying ? "Pause" : "Play"}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-violet-600 text-white hover:bg-violet-700 focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:outline-none dark:bg-violet-500 dark:hover:bg-violet-400"
-            >
-              {isPlaying ? <PauseIcon /> : <PlayIcon />}
-            </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handlePlayPause()
+                }}
+                aria-label={isPlaying ? "Pause" : "Play"}
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-violet-600 text-white hover:bg-violet-700 focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:outline-none dark:bg-violet-500 dark:hover:bg-violet-400"
+              >
+                {isPlaying ? <PauseIcon /> : <PlayIcon />}
+              </button>
 
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation()
-                handleSkip(SKIP_SECONDS)
-              }}
-              aria-label="Skip forward 10 seconds"
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
-            >
-              <SkipForward10Icon />
-            </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleSkip(SKIP_SECONDS)
+                }}
+                aria-label="Skip forward 10 seconds"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+              >
+                <SkipForward10Icon />
+              </button>
+            </div>
           </div>
         </div>
 
         {/* ── EXPANDED PANEL ── */}
         {expanded && (
-          <div className="flex flex-col gap-4 px-6 pt-3 pb-6 md:mx-auto md:max-w-2xl">
+          <div className="mx-auto flex w-full max-w-2xl flex-col items-center gap-4 px-6 pt-3 pb-6">
             {/* Collapse handle */}
-            <div className="flex justify-center">
+            <div className="flex w-full justify-center">
               <button
                 type="button"
                 onClick={() => setExpanded(false)}
@@ -226,108 +238,92 @@ export function MiniPlayer() {
               </button>
             </div>
 
-            {/* Mobile: large centred artwork */}
-            <div className="flex justify-center md:hidden">
-              <div className="relative aspect-square w-[58vw] max-w-[240px] overflow-hidden rounded-2xl shadow-xl">
-                <Image
-                  src={artworkLarge}
-                  alt={currentSong.collectionName}
-                  fill
-                  sizes="240px"
-                  className="object-cover"
-                  unoptimized
-                />
+            {/* Artwork — responsive: mobile 58 vw / 240 px, desktop 160 px */}
+            <div className="relative aspect-square w-[58vw] max-w-[240px] overflow-hidden rounded-2xl shadow-xl md:w-40">
+              <Image
+                src={artworkLarge}
+                alt={currentSong.collectionName}
+                fill
+                sizes="(max-width: 768px) 58vw, 160px"
+                className="object-cover"
+                unoptimized
+              />
+            </div>
+
+            {/* Track info — centred */}
+            <div className="w-full text-center">
+              <p className="truncate font-semibold text-gray-900 dark:text-gray-100">{currentSong.trackName}</p>
+              <p className="truncate text-sm text-gray-500 dark:text-gray-400">{currentSong.artistName}</p>
+              <p className="truncate text-xs text-gray-400 dark:text-gray-500">{currentSong.collectionName}</p>
+            </div>
+
+            {/* Seek bar + timestamps */}
+            <div className="flex w-full flex-col gap-1">
+              <Slider
+                variant="progress"
+                min={0}
+                max={100}
+                step={0.1}
+                value={[progress * 100]}
+                onValueChange={([val]) => seek((val ?? 0) / 100)}
+                aria-label="Playback position"
+              />
+              <div className="flex justify-between text-xs text-gray-400 dark:text-gray-500">
+                <span>{formatTime(currentSeconds)}</span>
+                <span>{formatTime(duration)}</span>
               </div>
             </div>
 
-            {/* Content row: desktop has artwork inline; mobile artwork is above */}
-            <div className="flex items-center gap-6">
-              {/* Desktop-only artwork */}
-              <div className="relative hidden h-20 w-20 shrink-0 overflow-hidden rounded-xl shadow-lg md:block">
-                <Image
-                  src={artworkLarge}
-                  alt={currentSong.collectionName}
-                  fill
-                  sizes="80px"
-                  className="object-cover"
-                  unoptimized
-                />
-              </div>
+            {/* Playback controls — centred, 50% larger on mobile */}
+            <div className="flex items-center justify-center gap-6 md:gap-4">
+              <button
+                type="button"
+                onClick={() => handleSkip(-SKIP_SECONDS)}
+                aria-label="Skip back 10 seconds"
+                className="flex h-[54px] w-[54px] items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 md:h-9 md:w-9 dark:text-gray-400 dark:hover:bg-gray-800"
+              >
+                <SkipBack10Icon className="h-7 w-7 md:h-6 md:w-6" />
+              </button>
 
-              {/* Track info + controls */}
-              <div className="flex min-w-0 flex-1 flex-col gap-3">
-                {/* Track info — centred on mobile, left on desktop */}
-                <div className="text-center md:text-left">
-                  <p className="truncate font-semibold text-gray-900 dark:text-gray-100">{currentSong.trackName}</p>
-                  <p className="truncate text-sm text-gray-500 dark:text-gray-400">{currentSong.artistName}</p>
-                  <p className="truncate text-xs text-gray-400 dark:text-gray-500">{currentSong.collectionName}</p>
-                </div>
+              <button
+                type="button"
+                onClick={handlePlayPause}
+                aria-label={isPlaying ? "Pause" : "Play"}
+                className="flex h-[72px] w-[72px] items-center justify-center rounded-full bg-violet-600 text-white shadow-md hover:bg-violet-700 focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:outline-none md:h-12 md:w-12 dark:bg-violet-500 dark:hover:bg-violet-400"
+              >
+                {isPlaying ? (
+                  <PauseIcon className="h-8 w-8 md:h-5 md:w-5" />
+                ) : (
+                  <PlayIcon className="h-8 w-8 md:h-5 md:w-5" />
+                )}
+              </button>
 
-                {/* Seek bar */}
-                <div className="flex flex-col gap-1">
-                  <Slider
-                    variant="progress"
-                    min={0}
-                    max={100}
-                    step={0.1}
-                    value={[progress * 100]}
-                    onValueChange={([val]) => seek((val ?? 0) / 100)}
-                    aria-label="Playback position"
-                  />
-                  <div className="flex justify-between text-xs text-gray-400 dark:text-gray-500">
-                    <span>{formatTime(currentSeconds)}</span>
-                    <span>{formatTime(duration)}</span>
-                  </div>
-                </div>
+              <button
+                type="button"
+                onClick={() => handleSkip(SKIP_SECONDS)}
+                aria-label="Skip forward 10 seconds"
+                className="flex h-[54px] w-[54px] items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 md:h-9 md:w-9 dark:text-gray-400 dark:hover:bg-gray-800"
+              >
+                <SkipForward10Icon className="h-7 w-7 md:h-6 md:w-6" />
+              </button>
+            </div>
 
-                {/* Playback controls — always centred */}
-                <div className="flex items-center justify-center gap-4">
-                  <button
-                    type="button"
-                    onClick={() => handleSkip(-SKIP_SECONDS)}
-                    aria-label="Skip back 10 seconds"
-                    className="flex h-9 w-9 items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
-                  >
-                    <SkipBack10Icon />
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={handlePlayPause}
-                    aria-label={isPlaying ? "Pause" : "Play"}
-                    className="flex h-12 w-12 items-center justify-center rounded-full bg-violet-600 text-white shadow-md hover:bg-violet-700 focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:outline-none dark:bg-violet-500 dark:hover:bg-violet-400"
-                  >
-                    {isPlaying ? <PauseIcon /> : <PlayIcon />}
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleSkip(SKIP_SECONDS)}
-                    aria-label="Skip forward 10 seconds"
-                    className="flex h-9 w-9 items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
-                  >
-                    <SkipForward10Icon />
-                  </button>
-                </div>
-
-                {/* Volume row */}
-                <div className="flex items-center gap-2">
-                  <VolumeIcon muted={volume === 0} />
-                  <Slider
-                    variant="volume"
-                    min={0}
-                    max={100}
-                    step={1}
-                    value={[volume * 100]}
-                    onValueChange={([val]) => setVolume((val ?? 0) / 100)}
-                    aria-label="Volume"
-                    className="max-w-full"
-                  />
-                  <span className="w-7 shrink-0 text-right text-xs text-gray-400 tabular-nums dark:text-gray-500">
-                    {Math.round(volume * 100)}%
-                  </span>
-                </div>
-              </div>
+            {/* Volume */}
+            <div className="flex w-full items-center gap-2">
+              <VolumeIcon muted={volume === 0} />
+              <Slider
+                variant="volume"
+                min={0}
+                max={100}
+                step={1}
+                value={[volume * 100]}
+                onValueChange={([val]) => setVolume((val ?? 0) / 100)}
+                aria-label="Volume"
+                className="max-w-full"
+              />
+              <span className="w-7 shrink-0 text-right text-xs text-gray-400 tabular-nums dark:text-gray-500">
+                {Math.round(volume * 100)}%
+              </span>
             </div>
           </div>
         )}
