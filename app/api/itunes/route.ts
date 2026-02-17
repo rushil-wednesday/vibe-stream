@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server"
 
 const ITUNES_API = "https://itunes.apple.com/search"
 const CACHE_TTL_MS = 5 * 60 * 1000 // 5 minutes
+const MAX_TERM_LENGTH = 100
+const MAX_RESULT_LIMIT = 50
+const NEXT_REVALIDATE_SECONDS = 300
 
 interface CacheEntry {
   data: unknown
@@ -42,8 +45,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   }
 
   // Sanitise: max 100 chars, strip control characters
-  const sanitisedTerm = term.slice(0, 100).replace(/[\x00-\x1F\x7F]/g, "")
-  const limit = Math.min(Number(searchParams.get("limit") ?? "25"), 50)
+  const sanitisedTerm = term.slice(0, MAX_TERM_LENGTH).replace(/[\x00-\x1F\x7F]/g, "")
+  const limit = Math.min(Number(searchParams.get("limit") ?? "25"), MAX_RESULT_LIMIT)
   const offset = Math.max(0, Number(searchParams.get("offset") ?? "0"))
 
   const cacheKey = `${sanitisedTerm}:${limit}:${offset}`
@@ -62,7 +65,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   upstream.searchParams.set("offset", String(offset))
 
   const response = await fetch(upstream.toString(), {
-    next: { revalidate: 300 }, // also hint Next.js data cache
+    next: { revalidate: NEXT_REVALIDATE_SECONDS }, // also hint Next.js data cache
   })
 
   if (!response.ok) {
