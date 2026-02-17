@@ -1,7 +1,8 @@
 "use client"
 
-import Image from "next/image"
 import React from "react"
+
+import Image from "next/image"
 
 import { Card } from "components/ui/Card"
 import { Skeleton } from "components/ui/Skeleton"
