@@ -10,6 +10,12 @@ import { usePlayerStore } from "store/usePlayerStore"
 import { getArtworkUrl } from "types/itunes"
 import type { ITunesSong } from "types/itunes"
 
+const ARTWORK_SIZE_CARD = 300
+const EQ_BAR_BASE_HEIGHT = 8
+const EQ_BAR_HEIGHT_INCREMENT = 4
+const EQ_BAR_BASE_DURATION = 0.5
+const EQ_BAR_DURATION_INCREMENT = 0.15
+
 interface SongCardProps {
   song: ITunesSong
 }
@@ -55,7 +61,7 @@ export function SongCard({ song }: SongCardProps) {
     }
   }
 
-  const artworkSrc = getArtworkUrl(song.artworkUrl100, 300)
+  const artworkSrc = getArtworkUrl(song.artworkUrl100, ARTWORK_SIZE_CARD)
 
   return (
     <Card
@@ -97,8 +103,8 @@ export function SongCard({ song }: SongCardProps) {
                 key={bar}
                 className="w-[3px] rounded-sm bg-white"
                 style={{
-                  height: `${8 + bar * 4}px`,
-                  animation: `equalizerBar ${0.5 + bar * 0.15}s ease-in-out infinite alternate`,
+                  height: `${EQ_BAR_BASE_HEIGHT + bar * EQ_BAR_HEIGHT_INCREMENT}px`,
+                  animation: `equalizerBar ${EQ_BAR_BASE_DURATION + bar * EQ_BAR_DURATION_INCREMENT}s ease-in-out infinite alternate`,
                 }}
               />
             ))}
