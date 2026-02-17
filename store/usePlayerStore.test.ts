@@ -10,8 +10,9 @@ const mockSong: ITunesSong = {
   collectionName: "1989",
   previewUrl: "https://example.com/preview.m4a",
   artworkUrl100: "https://example.com/art.jpg",
-  wrapperType: "track",
-  kind: "song",
+  trackTimeMillis: 219000,
+  primaryGenreName: "Pop",
+  releaseDate: "2014-10-27T00:00:00Z",
 }
 
 describe("usePlayerStore", () => {

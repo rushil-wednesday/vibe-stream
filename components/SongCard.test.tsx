@@ -1,8 +1,8 @@
-import { render, screen, fireEvent } from "@testing-library/react"
+import { fireEvent, render, screen } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 
-import { SongCard, SongCardSkeleton } from "./SongCard"
 import type { ITunesSong } from "types/itunes"
+import { SongCard, SongCardSkeleton } from "./SongCard"
 
 // TODO: mock usePlayerStore to isolate from Zustand
 vi.mock("store/usePlayerStore", () => ({
@@ -24,8 +24,9 @@ const mockSong: ITunesSong = {
   collectionName: "Test Album",
   previewUrl: "https://example.com/preview.m4a",
   artworkUrl100: "https://example.com/artwork100.jpg",
-  wrapperType: "track",
-  kind: "song",
+  trackTimeMillis: 210000,
+  primaryGenreName: "Pop",
+  releaseDate: "2024-01-01T00:00:00Z",
 }
 
 describe("SongCard", () => {

@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from "@testing-library/react"
+import { fireEvent, render, screen } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 
 import { ThemeToggle } from "./ThemeToggle"
@@ -15,8 +15,6 @@ describe("ThemeToggle", () => {
   })
 
   it("calls toggle when clicked", () => {
-    const toggle = vi.fn()
-    vi.mocked(vi.importMock("store/useThemeStore")).useThemeStore = () => ({ theme: "dark", toggle })
     render(<ThemeToggle />)
     fireEvent.click(screen.getByRole("button"))
     // TODO: assert toggle was called once store mock is properly wired

@@ -30,7 +30,11 @@ describe("useItunesSearch", () => {
 
   it("increments page on nextPage()", async () => {
     const { fetchSongs } = await import("lib/itunes")
-    vi.mocked(fetchSongs).mockResolvedValue(Array(25).fill(null).map((_, i) => ({ trackId: i }) as any))
+    vi.mocked(fetchSongs).mockResolvedValue(
+      Array(25)
+        .fill(null)
+        .map((_, i) => ({ trackId: i }) as any)
+    )
     const { result } = renderHook(() => useItunesSearch())
     act(() => result.current.search("rock"))
     await waitFor(() => expect(result.current.hasMore).toBe(true))
