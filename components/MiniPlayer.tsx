@@ -50,10 +50,10 @@ function VolumeIcon({ muted }: { muted: boolean }) {
 
 function SkipBack10Icon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-6 w-6" aria-hidden="true">
       <path d="M11.5 18a7.5 7.5 0 1 1 5.25-12.75" />
       <path d="m2 12 4-4-4-4" />
-      <text x="9" y="14" fontSize="5" fill="currentColor" stroke="none" fontWeight="bold">
+      <text x="8.5" y="15" fontSize="7" fill="currentColor" stroke="none" fontWeight="bold">
         10
       </text>
     </svg>
@@ -62,10 +62,10 @@ function SkipBack10Icon() {
 
 function SkipForward10Icon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-6 w-6" aria-hidden="true">
       <path d="M12.5 18a7.5 7.5 0 1 0-5.25-12.75" />
       <path d="m22 8-4 4 4 4" />
-      <text x="9" y="14" fontSize="5" fill="currentColor" stroke="none" fontWeight="bold">
+      <text x="8.5" y="15" fontSize="7" fill="currentColor" stroke="none" fontWeight="bold">
         10
       </text>
     </svg>
@@ -192,7 +192,7 @@ export function MiniPlayer() {
                 handlePlayPause()
               }}
               aria-label={isPlaying ? "Pause" : "Play"}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-violet-600 text-white hover:bg-violet-700 focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:outline-none dark:bg-violet-500 dark:hover:bg-violet-400"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-violet-600 text-white hover:bg-violet-700 focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:outline-none dark:bg-violet-500 dark:hover:bg-violet-400"
             >
               {isPlaying ? <PauseIcon /> : <PlayIcon />}
             </button>
@@ -286,7 +286,7 @@ export function MiniPlayer() {
                     type="button"
                     onClick={() => handleSkip(-SKIP_SECONDS)}
                     aria-label="Skip back 10 seconds"
-                    className="flex h-10 w-10 items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+                    className="flex h-9 w-9 items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
                   >
                     <SkipBack10Icon />
                   </button>
@@ -304,7 +304,7 @@ export function MiniPlayer() {
                     type="button"
                     onClick={() => handleSkip(SKIP_SECONDS)}
                     aria-label="Skip forward 10 seconds"
-                    className="flex h-10 w-10 items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+                    className="flex h-9 w-9 items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
                   >
                     <SkipForward10Icon />
                   </button>
