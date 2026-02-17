@@ -22,7 +22,11 @@ function formatTime(seconds: number): string {
  * MiniPlayer — fixed bottom bar that expands to a full player panel.
  *
  * Minimised state: artwork thumbnail + track info + play/pause + progress bar.
- * Expanded state: large artwork, seek bar with times, ±10s controls, volume.
+ * Expanded state:
+ *   Mobile — near-fullscreen overlay with large centred artwork, track info,
+ *            seek bar, centred playback controls, and volume slider.
+ *   Desktop — compact bottom panel (max-w-2xl) with side-by-side artwork +
+ *             controls layout; playback buttons centred.
  * Renders null when no song has been loaded (currentSong is null).
  */
 export function MiniPlayer() {
@@ -69,7 +73,7 @@ export function MiniPlayer() {
           "backdrop-blur-md",
           "overflow-hidden",
           "transition-[max-height] duration-300 ease-in-out",
-          expanded ? "max-h-[600px]" : "max-h-[68px]",
+          expanded ? "max-h-[92dvh] md:max-h-[340px]" : "max-h-[68px]",
         ].join(" ")}
       >
         {/* Thin progress bar along top edge (visible in minimised state) */}
@@ -102,23 +106,49 @@ export function MiniPlayer() {
             <p className="truncate text-xs text-gray-500 dark:text-gray-400">{currentSong.artistName}</p>
           </div>
 
-          {/* Play/pause — stopPropagation so clicking it doesn't expand */}
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation()
-              handlePlayPause()
-            }}
-            aria-label={isPlaying ? "Pause" : "Play"}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-violet-600 text-white hover:bg-violet-700 focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:outline-none dark:bg-violet-500 dark:hover:bg-violet-400"
-          >
-            {isPlaying ? <PauseIcon /> : <PlayIcon />}
-          </button>
+          {/* Centred controls: skip back, play/pause, skip forward */}
+          <div className="flex items-center justify-center gap-1">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                handleSkip(-SKIP_SECONDS)
+              }}
+              aria-label="Skip back 10 seconds"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+            >
+              <SkipBack10Icon />
+            </button>
+
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                handlePlayPause()
+              }}
+              aria-label={isPlaying ? "Pause" : "Play"}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-violet-600 text-white hover:bg-violet-700 focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:outline-none dark:bg-violet-500 dark:hover:bg-violet-400"
+            >
+              {isPlaying ? <PauseIcon /> : <PlayIcon />}
+            </button>
+
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                handleSkip(SKIP_SECONDS)
+              }}
+              aria-label="Skip forward 10 seconds"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+            >
+              <SkipForward10Icon />
+            </button>
+          </div>
         </div>
 
         {/* ── EXPANDED PANEL ── */}
         {expanded && (
-          <div className="flex flex-col gap-4 px-6 pt-4 pb-8">
+          <div className="flex flex-col gap-4 px-6 pt-3 pb-6 md:mx-auto md:max-w-2xl">
             {/* Collapse handle */}
             <div className="flex justify-center">
               <button
@@ -131,14 +161,29 @@ export function MiniPlayer() {
               </button>
             </div>
 
-            <div className="flex items-center gap-6">
-              {/* Large artwork */}
-              <div className="relative hidden h-24 w-24 shrink-0 overflow-hidden rounded-xl shadow-lg md:block">
+            {/* Mobile: large centred artwork */}
+            <div className="flex justify-center md:hidden">
+              <div className="relative aspect-square w-[58vw] max-w-[240px] overflow-hidden rounded-2xl shadow-xl">
                 <Image
                   src={artworkLarge}
                   alt={currentSong.collectionName}
                   fill
-                  sizes="96px"
+                  sizes="240px"
+                  className="object-cover"
+                  unoptimized
+                />
+              </div>
+            </div>
+
+            {/* Content row: desktop has artwork inline; mobile artwork is above */}
+            <div className="flex items-center gap-6">
+              {/* Desktop-only artwork */}
+              <div className="relative hidden h-20 w-20 shrink-0 overflow-hidden rounded-xl shadow-lg md:block">
+                <Image
+                  src={artworkLarge}
+                  alt={currentSong.collectionName}
+                  fill
+                  sizes="80px"
                   className="object-cover"
                   unoptimized
                 />
@@ -146,7 +191,8 @@ export function MiniPlayer() {
 
               {/* Track info + controls */}
               <div className="flex min-w-0 flex-1 flex-col gap-3">
-                <div>
+                {/* Track info — centred on mobile, left on desktop */}
+                <div className="text-center md:text-left">
                   <p className="truncate font-semibold text-gray-900 dark:text-gray-100">{currentSong.trackName}</p>
                   <p className="truncate text-sm text-gray-500 dark:text-gray-400">{currentSong.artistName}</p>
                   <p className="truncate text-xs text-gray-400 dark:text-gray-500">{currentSong.collectionName}</p>
@@ -169,13 +215,13 @@ export function MiniPlayer() {
                   </div>
                 </div>
 
-                {/* Playback controls */}
-                <div className="flex items-center gap-3">
+                {/* Playback controls — always centred */}
+                <div className="flex items-center justify-center gap-4">
                   <button
                     type="button"
                     onClick={() => handleSkip(-SKIP_SECONDS)}
                     aria-label="Skip back 10 seconds"
-                    className="flex h-9 w-9 items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+                    className="flex h-10 w-10 items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
                   >
                     <SkipBack10Icon />
                   </button>
@@ -193,13 +239,13 @@ export function MiniPlayer() {
                     type="button"
                     onClick={() => handleSkip(SKIP_SECONDS)}
                     aria-label="Skip forward 10 seconds"
-                    className="flex h-9 w-9 items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+                    className="flex h-10 w-10 items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
                   >
                     <SkipForward10Icon />
                   </button>
                 </div>
 
-                {/* Volume row — visible on all screen sizes */}
+                {/* Volume row */}
                 <div className="flex items-center gap-2">
                   <VolumeIcon muted={volume === 0} />
                   <Slider
