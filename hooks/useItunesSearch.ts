@@ -6,7 +6,7 @@ import { fetchSongs, pickDefaultQuery } from "lib/itunes"
 import type { ITunesSong } from "types/itunes"
 
 const DEBOUNCE_MS = 500
-const PAGE_SIZE = 25
+const PAGE_SIZE = 20
 
 interface UseItunesSearchResult {
   songs: ITunesSong[]
@@ -50,10 +50,11 @@ export function useItunesSearch(): UseItunesSearchResult {
     setError(null)
     try {
       const offset = (pageNum - 1) * PAGE_SIZE
-      const results = await fetchSongs(query, PAGE_SIZE, offset, signal)
+      // Fetch one extra to detect whether another page exists (look-ahead)
+      const results = await fetchSongs(query, PAGE_SIZE + 1, offset, signal)
       if (!signal.aborted) {
-        setSongs(results)
-        setHasMore(results.length === PAGE_SIZE)
+        setSongs(results.slice(0, PAGE_SIZE))
+        setHasMore(results.length > PAGE_SIZE)
       }
     } catch (err) {
       if (!signal.aborted) {
