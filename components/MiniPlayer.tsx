@@ -49,40 +49,88 @@ function VolumeIcon({ muted }: { muted: boolean }) {
 }
 
 /**
- * Skip-back 10 s — 270° counter-clockwise arc (3 o'clock → 12 o'clock),
- * arrowhead at 12 o'clock pointing LEFT to indicate backward direction.
- * Center (12,12), radius 8.
+ * Animated skip-back / skip-forward button.
+ *
+ * Uses the Feather-style arc-arrow paths. The "10" label is a plain HTML
+ * span positioned over the SVG so it renders with crisp system fonts.
+ * Plays a ripple + nudge animation on each click via CSS keyframes defined
+ * in styles/tailwind.css (skipRipple, skipNudgeLeft, skipNudgeRight).
  */
-function SkipBack10Icon({ className = "h-6 w-6" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className} aria-hidden="true">
-      {/* 270° CCW arc: (20,12) → (12,4) */}
-      <path d="M20 12A8 8 0 1 0 12 4" strokeLinecap="round" />
-      {/* Arrowhead at (12,4) pointing LEFT — wings extend right */}
-      <path d="M13.5 2.5L12 4L13.5 5.5" strokeLinecap="round" strokeLinejoin="round" />
-      <text x="12" y="14.5" fontSize="6.5" fill="currentColor" stroke="none" fontWeight="bold" textAnchor="middle">
-        10
-      </text>
-    </svg>
-  )
-}
+function SkipButton({
+  direction,
+  onClick,
+  className = "",
+  iconClassName = "h-6 w-6",
+  ariaLabel,
+}: {
+  direction: "back" | "forward"
+  onClick: () => void
+  className?: string
+  iconClassName?: string
+  ariaLabel: string
+}) {
+  const [animKey, setAnimKey] = useState(0)
+  const isBack = direction === "back"
 
-/**
- * Skip-forward 10 s — 270° clockwise arc (9 o'clock → 12 o'clock),
- * arrowhead at 12 o'clock pointing RIGHT to indicate forward direction.
- * Center (12,12), radius 8.
- */
-function SkipForward10Icon({ className = "h-6 w-6" }: { className?: string }) {
+  function handleClick(e: React.MouseEvent) {
+    e.stopPropagation()
+    onClick()
+    setAnimKey((k) => k + 1)
+  }
+
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className} aria-hidden="true">
-      {/* 270° CW arc: (4,12) → (12,4) */}
-      <path d="M4 12A8 8 0 1 1 12 4" strokeLinecap="round" />
-      {/* Arrowhead at (12,4) pointing RIGHT — wings extend left */}
-      <path d="M10.5 2.5L12 4L10.5 5.5" strokeLinecap="round" strokeLinejoin="round" />
-      <text x="12" y="14.5" fontSize="6.5" fill="currentColor" stroke="none" fontWeight="bold" textAnchor="middle">
-        10
-      </text>
-    </svg>
+    <button
+      type="button"
+      onClick={handleClick}
+      aria-label={ariaLabel}
+      className={[
+        "relative flex shrink-0 items-center justify-center overflow-hidden rounded-full",
+        "text-gray-600 dark:text-gray-400",
+        "ring-1 ring-gray-300 hover:bg-gray-100 dark:ring-gray-700 dark:hover:bg-gray-800",
+        "transition-colors",
+        className,
+      ].join(" ")}
+    >
+      {/* Ripple — mounted fresh each click so the animation restarts */}
+      {animKey > 0 && (
+        <span
+          key={`ripple-${animKey}`}
+          className="pointer-events-none absolute inset-0 rounded-full bg-violet-400/25"
+          style={{ animation: "skipRipple 0.4s ease-out forwards" }}
+        />
+      )}
+
+      {/* Arc-arrow SVG — re-keyed each click to restart the nudge animation */}
+      <svg
+        key={`icon-${animKey}`}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className={iconClassName}
+        style={animKey > 0 ? { animation: `${isBack ? "skipNudgeLeft" : "skipNudgeRight"} 0.35s ease-out` } : undefined}
+        aria-hidden="true"
+      >
+        {isBack ? (
+          <>
+            <path d="M1 4v6h6" />
+            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+          </>
+        ) : (
+          <>
+            <path d="M23 4v6h-6" />
+            <path d="M20.49 15a9 9 0 1 1-2.13-9.36L23 10" />
+          </>
+        )}
+      </svg>
+
+      {/* "10" label — separate HTML element for better font rendering */}
+      <span className="pointer-events-none absolute inset-0 flex items-center justify-center select-none">
+        <span className="text-[8px] leading-none font-bold">10</span>
+      </span>
+    </button>
   )
 }
 
@@ -184,17 +232,13 @@ export function MiniPlayer() {
 
             {/* Controls — skip back, play/pause, skip forward */}
             <div className="flex items-center gap-1">
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  handleSkip(-SKIP_SECONDS)
-                }}
-                aria-label="Skip back 10 seconds"
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
-              >
-                <SkipBack10Icon />
-              </button>
+              <SkipButton
+                direction="back"
+                onClick={() => handleSkip(-SKIP_SECONDS)}
+                ariaLabel="Skip back 10 seconds"
+                className="h-9 w-9"
+                iconClassName="h-5 w-5"
+              />
 
               <button
                 type="button"
@@ -208,17 +252,13 @@ export function MiniPlayer() {
                 {isPlaying ? <PauseIcon /> : <PlayIcon />}
               </button>
 
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  handleSkip(SKIP_SECONDS)
-                }}
-                aria-label="Skip forward 10 seconds"
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
-              >
-                <SkipForward10Icon />
-              </button>
+              <SkipButton
+                direction="forward"
+                onClick={() => handleSkip(SKIP_SECONDS)}
+                ariaLabel="Skip forward 10 seconds"
+                className="h-9 w-9"
+                iconClassName="h-5 w-5"
+              />
             </div>
           </div>
         </div>
@@ -276,14 +316,13 @@ export function MiniPlayer() {
 
             {/* Playback controls — centred, 50% larger on mobile */}
             <div className="flex items-center justify-center gap-6 md:gap-4">
-              <button
-                type="button"
+              <SkipButton
+                direction="back"
                 onClick={() => handleSkip(-SKIP_SECONDS)}
-                aria-label="Skip back 10 seconds"
-                className="flex h-[54px] w-[54px] items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 md:h-9 md:w-9 dark:text-gray-400 dark:hover:bg-gray-800"
-              >
-                <SkipBack10Icon className="h-7 w-7 md:h-6 md:w-6" />
-              </button>
+                ariaLabel="Skip back 10 seconds"
+                className="h-[54px] w-[54px] md:h-12 md:w-12"
+                iconClassName="h-7 w-7 md:h-6 md:w-6"
+              />
 
               <button
                 type="button"
@@ -298,14 +337,13 @@ export function MiniPlayer() {
                 )}
               </button>
 
-              <button
-                type="button"
+              <SkipButton
+                direction="forward"
                 onClick={() => handleSkip(SKIP_SECONDS)}
-                aria-label="Skip forward 10 seconds"
-                className="flex h-[54px] w-[54px] items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 md:h-9 md:w-9 dark:text-gray-400 dark:hover:bg-gray-800"
-              >
-                <SkipForward10Icon className="h-7 w-7 md:h-6 md:w-6" />
-              </button>
+                ariaLabel="Skip forward 10 seconds"
+                className="h-[54px] w-[54px] md:h-12 md:w-12"
+                iconClassName="h-7 w-7 md:h-6 md:w-6"
+              />
             </div>
 
             {/* Volume */}
