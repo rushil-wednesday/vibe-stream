@@ -44,8 +44,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   // Sanitise: max 100 chars, strip control characters
   const sanitisedTerm = term.slice(0, 100).replace(/[\x00-\x1F\x7F]/g, "")
   const limit = Math.min(Number(searchParams.get("limit") ?? "25"), 50)
+  const offset = Math.max(0, Number(searchParams.get("offset") ?? "0"))
 
-  const cacheKey = `${sanitisedTerm}:${limit}`
+  const cacheKey = `${sanitisedTerm}:${limit}:${offset}`
   const cached = getCached(cacheKey)
   if (cached) {
     return NextResponse.json(cached, {
@@ -58,6 +59,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   upstream.searchParams.set("media", "music")
   upstream.searchParams.set("entity", "song")
   upstream.searchParams.set("limit", String(limit))
+  upstream.searchParams.set("offset", String(offset))
 
   const response = await fetch(upstream.toString(), {
     next: { revalidate: 300 }, // also hint Next.js data cache

@@ -53,8 +53,7 @@ const inputVariants = cva(
 
 // Omit native HTML `size` (number) to avoid conflict with CVA size variant (string union)
 export interface InputProps
-  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "size">,
-    VariantProps<typeof inputVariants> {}
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "size">, VariantProps<typeof inputVariants> {}
 
 /**
  * Input component with default and search variants.

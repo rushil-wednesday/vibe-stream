@@ -13,13 +13,7 @@ import { twMerge } from "tailwind-merge"
 const cardVariants = cva(["rounded-xl", "overflow-hidden", "transition-all", "duration-200"], {
   variants: {
     variant: {
-      default: [
-        "bg-white",
-        "border",
-        "border-gray-200",
-        "dark:bg-gray-900",
-        "dark:border-gray-700",
-      ],
+      default: ["bg-white", "border", "border-gray-200", "dark:bg-gray-900", "dark:border-gray-700"],
       interactive: [
         "bg-white",
         "border",

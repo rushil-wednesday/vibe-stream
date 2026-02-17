@@ -7,30 +7,35 @@ import { usePlayerStore } from "store/usePlayerStore"
 /**
  * useAudio — connects the HTML5 Audio singleton to the Zustand player store.
  *
- * This hook must be mounted once at the root level (layout.tsx) so that it
+ * This hook must be mounted once at the root level (MiniPlayer) so that it
  * persists across page navigations and keeps music playing during route changes.
  *
  * Responsibilities:
  * - Reacts to store.isPlaying / store.currentSong changes and calls audio APIs
- * - Wires timeupdate / ended / durationchange events back into the store
- * - Syncs volume changes from the store to the Audio element
+ * - Wires timeupdate / ended / durationchange / volumechange events back into the store
+ * - Uses a Zustand subscription (not useEffect) to forward user-initiated seeks
+ *   to the audio element, avoiding the stale-ref trap of depending on [seek]
  */
 export function useAudio() {
-  const { currentSong, isPlaying, volume, seek, setProgress, pause } = usePlayerStore()
+  const { currentSong, isPlaying, volume, setProgress, pause, setVolume } = usePlayerStore()
   const prevSongRef = useRef<number | null>(null)
+  // Tracks the last progress value written by the audio timeupdate event so we
+  // can distinguish audio-driven updates from user-initiated seeks/skips.
+  const audioProgressRef = useRef(0)
 
-  // Lazy-import audio only in the browser to avoid SSR crashes
+  // Wire up persistent event listeners + Zustand seek subscription (run once)
   useEffect(() => {
     let cleanup: (() => void) | undefined
 
     async function setup() {
       const { audio } = await import("lib/audio")
 
-      // Wire up persistent event listeners (run once)
       const offTimeUpdate = audio.on("timeupdate", () => {
         const dur = audio.duration
         if (dur > 0) {
-          setProgress(audio.currentTime / dur, dur)
+          const p = audio.currentTime / dur
+          audioProgressRef.current = p
+          setProgress(p, dur)
         }
       })
 
@@ -39,15 +44,31 @@ export function useAudio() {
         setProgress(0, audio.duration)
       })
 
+      // Sync audio element volume changes (e.g. mute toggle) back to the store
+      const offVolumeChange = audio.on("volumechange", () => {
+        setVolume(audio.volume)
+      })
+
+      // Subscribe to store progress changes to forward user seeks to audio element.
+      // A Zustand subscription avoids the stale-function-ref problem of useEffect([seek]).
+      const unsubSeek = usePlayerStore.subscribe((state, prev) => {
+        if (state.progress === prev.progress) return
+        // Skip if this change came from timeupdate (delta ≤ 0.01 of what we wrote)
+        if (Math.abs(state.progress - audioProgressRef.current) <= 0.01) return
+        audio.seek(state.progress)
+      })
+
       cleanup = () => {
         offTimeUpdate()
         offEnded()
+        offVolumeChange()
+        unsubSeek()
       }
     }
 
     void setup()
     return () => cleanup?.()
-  }, [setProgress, pause])
+  }, [setProgress, pause, setVolume])
 
   // React to song / playback state changes
   useEffect(() => {
@@ -79,25 +100,8 @@ export function useAudio() {
     void syncPlayback()
   }, [currentSong, isPlaying, pause])
 
-  // Sync volume
+  // Sync volume store → audio element
   useEffect(() => {
-    import("lib/audio")
-      .then(({ audio }) => audio.setVolume(volume))
-      .catch(() => undefined)
+    import("lib/audio").then(({ audio }) => audio.setVolume(volume)).catch(() => undefined)
   }, [volume])
-
-  // Sync seek: when store.progress is set externally (from Slider drag),
-  // forward the seek to the Audio element
-  const prevProgress = useRef(0)
-  useEffect(() => {
-    const { progress } = usePlayerStore.getState()
-    // Only seek when the change looks like a user drag (not a timeupdate)
-    const delta = Math.abs(progress - prevProgress.current)
-    prevProgress.current = progress
-    if (delta > 0.01) {
-      import("lib/audio")
-        .then(({ audio }) => audio.seek(progress))
-        .catch(() => undefined)
-    }
-  }, [seek])
 }

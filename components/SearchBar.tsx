@@ -72,7 +72,9 @@ export function SearchBar({ onSearch, isLoading = false }: SearchBarProps) {
   return (
     <div className="relative w-full max-w-xl">
       {/* Search icon */}
-      <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2">{isLoading ? <Spinner /> : <SearchIcon />}</span>
+      <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2">
+        {isLoading ? <Spinner /> : <SearchIcon />}
+      </span>
 
       <Input
         ref={inputRef}
@@ -92,7 +94,7 @@ export function SearchBar({ onSearch, isLoading = false }: SearchBarProps) {
           type="button"
           onClick={handleClear}
           aria-label="Clear search"
-          className="absolute right-3 top-1/2 -translate-y-1/2 flex h-5 w-5 items-center justify-center rounded-full bg-gray-200 text-gray-500 transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600"
+          className="absolute top-1/2 right-3 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full bg-gray-200 text-gray-500 transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600"
         >
           <ClearIcon />
         </button>
@@ -111,11 +113,7 @@ function Spinner() {
       aria-hidden="true"
     >
       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-      <path
-        className="opacity-75"
-        fill="currentColor"
-        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-      />
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
     </svg>
   )
 }

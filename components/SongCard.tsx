@@ -37,9 +37,7 @@ function PauseIcon() {
  */
 export function SongCard({ song }: SongCardProps) {
   // Granular selector: only re-render when THIS song's play state changes
-  const isThisPlaying = usePlayerStore(
-    (s) => s.currentSong?.trackId === song.trackId && s.isPlaying
-  )
+  const isThisPlaying = usePlayerStore((s) => s.currentSong?.trackId === song.trackId && s.isPlaying)
   const isCurrentSong = usePlayerStore((s) => s.currentSong?.trackId === song.trackId)
   const play = usePlayerStore((s) => s.play)
   const pause = usePlayerStore((s) => s.pause)
@@ -84,7 +82,7 @@ export function SongCard({ song }: SongCardProps) {
             type="button"
             onClick={handlePlayPause}
             aria-label={isThisPlaying ? "Pause" : "Play"}
-            className="flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-gray-900 opacity-0 shadow-lg transition-opacity duration-200 hover:bg-white group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+            className="flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-gray-900 opacity-0 shadow-lg transition-opacity duration-200 group-hover:opacity-100 hover:bg-white focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:outline-none"
           >
             {isThisPlaying ? <PauseIcon /> : <PlayIcon />}
           </button>
@@ -92,7 +90,7 @@ export function SongCard({ song }: SongCardProps) {
 
         {/* Currently-playing animated indicator */}
         {isThisPlaying && (
-          <div className="absolute bottom-2 right-2 flex items-end gap-[2px]">
+          <div className="absolute right-2 bottom-2 flex items-end gap-[2px]">
             {[1, 2, 3].map((bar) => (
               <span
                 key={bar}

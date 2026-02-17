@@ -32,12 +32,30 @@ function ChevronDownIcon() {
   )
 }
 
+function VolumeIcon({ muted }: { muted: boolean }) {
+  return muted ? (
+    <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 shrink-0" aria-hidden="true">
+      <path d="M13 3a1 1 0 0 0-1.707-.707L6.586 7H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h2.586l4.707 4.707A1 1 0 0 0 13 21V3z" />
+      <line x1="23" y1="9" x2="17" y2="15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <line x1="17" y1="9" x2="23" y2="15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  ) : (
+    <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 shrink-0" aria-hidden="true">
+      <path d="M13 3a1 1 0 0 0-1.707-.707L6.586 7H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h2.586l4.707 4.707A1 1 0 0 0 13 21V3z" />
+      <path d="M16.5 7.5a5 5 0 0 1 0 9" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <path d="M19.5 4.5a9 9 0 0 1 0 15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 function SkipBack10Icon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5" aria-hidden="true">
       <path d="M11.5 18a7.5 7.5 0 1 1 5.25-12.75" />
       <path d="m2 12 4-4-4-4" />
-      <text x="9" y="14" fontSize="5" fill="currentColor" stroke="none" fontWeight="bold">10</text>
+      <text x="9" y="14" fontSize="5" fill="currentColor" stroke="none" fontWeight="bold">
+        10
+      </text>
     </svg>
   )
 }
@@ -47,7 +65,9 @@ function SkipForward10Icon() {
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5" aria-hidden="true">
       <path d="M12.5 18a7.5 7.5 0 1 0-5.25-12.75" />
       <path d="m22 8-4 4 4 4" />
-      <text x="9" y="14" fontSize="5" fill="currentColor" stroke="none" fontWeight="bold">10</text>
+      <text x="9" y="14" fontSize="5" fill="currentColor" stroke="none" fontWeight="bold">
+        10
+      </text>
     </svg>
   )
 }
@@ -104,7 +124,7 @@ export function MiniPlayer() {
 
       <div
         className={[
-          "fixed bottom-0 left-0 right-0 z-50",
+          "fixed right-0 bottom-0 left-0 z-50",
           "border-t border-gray-200 dark:border-gray-800",
           "bg-white/95 dark:bg-gray-950/95",
           "backdrop-blur-md",
@@ -114,9 +134,9 @@ export function MiniPlayer() {
       >
         {/* Thin progress bar along top edge (visible in minimised state) */}
         {!expanded && (
-          <div className="absolute left-0 right-0 top-0 h-0.5 bg-gray-200 dark:bg-gray-800">
+          <div className="absolute top-0 right-0 left-0 h-0.5 bg-gray-200 dark:bg-gray-800">
             <div
-              className="h-full bg-violet-500 dark:bg-violet-400 transition-all duration-300"
+              className="h-full bg-violet-500 transition-all duration-300 dark:bg-violet-400"
               style={{ width: `${progress * 100}%` }}
             />
           </div>
@@ -124,10 +144,7 @@ export function MiniPlayer() {
 
         {/* ── MINIMISED BAR ── */}
         <div
-          className={[
-            "flex h-[68px] cursor-pointer items-center gap-3 px-4",
-            expanded ? "hidden" : "flex",
-          ].join(" ")}
+          className={["flex h-[68px] cursor-pointer items-center gap-3 px-4", expanded ? "hidden" : "flex"].join(" ")}
           onClick={() => setExpanded(true)}
           role="button"
           tabIndex={0}
@@ -148,9 +165,12 @@ export function MiniPlayer() {
           {/* Play/pause — stopPropagation so clicking it doesn't expand */}
           <button
             type="button"
-            onClick={(e) => { e.stopPropagation(); handlePlayPause() }}
+            onClick={(e) => {
+              e.stopPropagation()
+              handlePlayPause()
+            }}
             aria-label={isPlaying ? "Pause" : "Play"}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-violet-600 text-white hover:bg-violet-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 dark:bg-violet-500 dark:hover:bg-violet-400"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-violet-600 text-white hover:bg-violet-700 focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:outline-none dark:bg-violet-500 dark:hover:bg-violet-400"
           >
             {isPlaying ? <PauseIcon /> : <PlayIcon />}
           </button>
@@ -158,7 +178,7 @@ export function MiniPlayer() {
 
         {/* ── EXPANDED PANEL ── */}
         {expanded && (
-          <div className="flex flex-col gap-4 px-6 pb-8 pt-4">
+          <div className="flex flex-col gap-4 px-6 pt-4 pb-8">
             {/* Collapse handle */}
             <div className="flex justify-center">
               <button
@@ -174,7 +194,14 @@ export function MiniPlayer() {
             <div className="flex items-center gap-6">
               {/* Large artwork */}
               <div className="relative hidden h-24 w-24 shrink-0 overflow-hidden rounded-xl shadow-lg md:block">
-                <Image src={artworkLarge} alt={currentSong.collectionName} fill sizes="96px" className="object-cover" unoptimized />
+                <Image
+                  src={artworkLarge}
+                  alt={currentSong.collectionName}
+                  fill
+                  sizes="96px"
+                  className="object-cover"
+                  unoptimized
+                />
               </div>
 
               {/* Track info + controls */}
@@ -217,7 +244,7 @@ export function MiniPlayer() {
                     type="button"
                     onClick={handlePlayPause}
                     aria-label={isPlaying ? "Pause" : "Play"}
-                    className="flex h-12 w-12 items-center justify-center rounded-full bg-violet-600 text-white shadow-md hover:bg-violet-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 dark:bg-violet-500 dark:hover:bg-violet-400"
+                    className="flex h-12 w-12 items-center justify-center rounded-full bg-violet-600 text-white shadow-md hover:bg-violet-700 focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:outline-none dark:bg-violet-500 dark:hover:bg-violet-400"
                   >
                     {isPlaying ? <PauseIcon /> : <PlayIcon />}
                   </button>
@@ -230,20 +257,24 @@ export function MiniPlayer() {
                   >
                     <SkipForward10Icon />
                   </button>
+                </div>
 
-                  {/* Volume (desktop only) */}
-                  <div className="ml-auto hidden items-center gap-2 md:flex">
-                    <span className="text-xs text-gray-400">Vol</span>
-                    <Slider
-                      variant="volume"
-                      min={0}
-                      max={100}
-                      step={1}
-                      value={[volume * 100]}
-                      onValueChange={([val]) => setVolume((val ?? 0) / 100)}
-                      aria-label="Volume"
-                    />
-                  </div>
+                {/* Volume row — visible on all screen sizes */}
+                <div className="flex items-center gap-2">
+                  <VolumeIcon muted={volume === 0} />
+                  <Slider
+                    variant="volume"
+                    min={0}
+                    max={100}
+                    step={1}
+                    value={[volume * 100]}
+                    onValueChange={([val]) => setVolume((val ?? 0) / 100)}
+                    aria-label="Volume"
+                    className="max-w-full"
+                  />
+                  <span className="w-7 shrink-0 text-right text-xs text-gray-400 tabular-nums dark:text-gray-500">
+                    {Math.round(volume * 100)}%
+                  </span>
                 </div>
               </div>
             </div>
