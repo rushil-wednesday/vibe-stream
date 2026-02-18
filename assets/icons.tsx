@@ -48,24 +48,32 @@ export function ChevronRightIcon({ className = "h-4 w-4" }: { className?: string
   )
 }
 
-export function SkipBack10Icon() {
+/**
+ * Skip-back 10 s — 270° counter-clockwise arc (3 o'clock → 12 o'clock),
+ * arrowhead at 12 o'clock pointing LEFT to indicate backward direction.
+ */
+export function SkipBack10Icon({ className = "h-6 w-6" }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5" aria-hidden="true">
-      <path d="M11.5 18a7.5 7.5 0 1 1 5.25-12.75" />
-      <path d="m2 12 4-4-4-4" />
-      <text x="9" y="14" fontSize="5" fill="currentColor" stroke="none" fontWeight="bold">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className} aria-hidden="true">
+      <path d="M20 12A8 8 0 1 0 12 4" strokeLinecap="round" />
+      <path d="M13.5 2.5L12 4L13.5 5.5" strokeLinecap="round" strokeLinejoin="round" />
+      <text x="12" y="14.5" fontSize="6.5" fill="currentColor" stroke="none" fontWeight="bold" textAnchor="middle">
         10
       </text>
     </svg>
   )
 }
 
-export function SkipForward10Icon() {
+/**
+ * Skip-forward 10 s — 270° clockwise arc (9 o'clock → 12 o'clock),
+ * arrowhead at 12 o'clock pointing RIGHT to indicate forward direction.
+ */
+export function SkipForward10Icon({ className = "h-6 w-6" }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5" aria-hidden="true">
-      <path d="M12.5 18a7.5 7.5 0 1 0-5.25-12.75" />
-      <path d="m22 8-4 4 4 4" />
-      <text x="9" y="14" fontSize="5" fill="currentColor" stroke="none" fontWeight="bold">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className} aria-hidden="true">
+      <path d="M4 12A8 8 0 1 1 12 4" strokeLinecap="round" />
+      <path d="M10.5 2.5L12 4L10.5 5.5" strokeLinecap="round" strokeLinejoin="round" />
+      <text x="12" y="14.5" fontSize="6.5" fill="currentColor" stroke="none" fontWeight="bold" textAnchor="middle">
         10
       </text>
     </svg>

@@ -5,7 +5,7 @@ const BASE_URL = "/api/itunes"
 /** Curated queries used on the homepage when no search term is active */
 const DEFAULT_QUERIES = ["top hits", "pop", "hip hop", "indie", "electronic"]
 
-function pickDefaultQuery(): string {
+export function pickDefaultQuery(): string {
   return DEFAULT_QUERIES[Math.floor(Math.random() * DEFAULT_QUERIES.length)] ?? "top hits"
 }
 
