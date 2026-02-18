@@ -24,7 +24,7 @@ const mockSong: ITunesSong = {
   collectionName: "Test Album",
   previewUrl: "https://example.com/preview.m4a",
   artworkUrl100: "https://example.com/artwork100.jpg",
-  trackTimeMillis: 30000,
+  trackTimeMillis: 210000,
   primaryGenreName: "Pop",
   releaseDate: "2024-01-01T00:00:00Z",
 }

@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 
-const ITUNES_API = "https://itunes.apple.com/search"
-const CACHE_TTL_MS = 5 * 60 * 1000 // 5 minutes
-const MAX_TERM_LENGTH = 100
-const MAX_RESULT_LIMIT = 50
-const NEXT_REVALIDATE_SECONDS = 300
+import { CACHE_TTL_MS, ITUNES_API, MAX_RESULT_LIMIT, MAX_TERM_LENGTH, NEXT_REVALIDATE_SECONDS } from "./constants"
 
 interface CacheEntry {
   data: unknown
