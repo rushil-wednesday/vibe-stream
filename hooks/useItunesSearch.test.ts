@@ -1,10 +1,9 @@
 import { renderHook, act, waitFor } from "@testing-library/react"
 import { describe, expect, it, vi, beforeEach } from "vitest"
 
-// TODO: mock fetchSongs / fetchDefaultSongs from lib/itunes
 vi.mock("lib/itunes", () => ({
   fetchSongs: vi.fn().mockResolvedValue([]),
-  fetchDefaultSongs: vi.fn().mockResolvedValue([]),
+  pickDefaultQuery: vi.fn().mockReturnValue("top hits"),
 }))
 
 const { useItunesSearch } = await import("./useItunesSearch")
@@ -15,10 +14,10 @@ describe("useItunesSearch", () => {
   })
 
   it("fetches default songs on mount", async () => {
-    const { fetchDefaultSongs } = await import("lib/itunes")
+    const { fetchSongs } = await import("lib/itunes")
     renderHook(() => useItunesSearch())
     await waitFor(() => {
-      expect(fetchDefaultSongs).toHaveBeenCalledOnce()
+      expect(fetchSongs).toHaveBeenCalledOnce()
     })
   })
 
@@ -56,8 +55,8 @@ describe("useItunesSearch", () => {
   })
 
   it("sets error state on fetch failure", async () => {
-    const { fetchDefaultSongs } = await import("lib/itunes")
-    vi.mocked(fetchDefaultSongs).mockRejectedValue(new Error("network error"))
+    const { fetchSongs } = await import("lib/itunes")
+    vi.mocked(fetchSongs).mockRejectedValue(new Error("network error"))
     const { result } = renderHook(() => useItunesSearch())
     await waitFor(() => expect(result.current.error).toBe("network error"))
   })
