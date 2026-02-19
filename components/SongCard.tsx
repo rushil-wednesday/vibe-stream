@@ -5,7 +5,13 @@ import React from "react"
 
 import { PauseIcon, PlayIcon } from "assets/icons"
 import { Card } from "components/ui/Card"
-import { ARTWORK_SIZE_CARD, EQ_BAR_BASE_DURATION, EQ_BAR_BASE_HEIGHT, EQ_BAR_DURATION_INCREMENT, EQ_BAR_HEIGHT_INCREMENT } from "constants/player"
+import {
+  ARTWORK_SIZE_CARD,
+  EQ_BAR_BASE_DURATION,
+  EQ_BAR_BASE_HEIGHT,
+  EQ_BAR_DURATION_INCREMENT,
+  EQ_BAR_HEIGHT_INCREMENT,
+} from "constants/player"
 import { Skeleton } from "components/ui/Skeleton"
 import { usePlayerStore } from "store/usePlayerStore"
 import { getArtworkUrl } from "types/itunes"

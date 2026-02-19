@@ -8,7 +8,6 @@ import { SearchBar } from "components/SearchBar"
 import { SongCard, SongCardSkeleton } from "components/SongCard"
 import { useItunesSearch } from "hooks/useItunesSearch"
 
-
 export default function HomePage() {
   const { songs, isLoading, error, page, hasMore, search, nextPage, prevPage } = useItunesSearch()
 
