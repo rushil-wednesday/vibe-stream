@@ -3,9 +3,9 @@ import "styles/tailwind.css"
 import type { Metadata } from "next"
 import Script from "next/script"
 
-import { THEME_DARK, THEME_LIGHT } from "constants/theme"
-
+import { AuthProvider } from "components/auth/AuthProvider"
 import { MiniPlayer } from "components/MiniPlayer"
+import { THEME_DARK, THEME_LIGHT } from "constants/theme"
 
 export const metadata: Metadata = {
   title: "VibeStream",
@@ -45,7 +45,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       {/* pb-[68px] prevents content from hiding behind the MiniPlayer bar */}
       <body className="pb-[68px]">
-        {children}
+        <AuthProvider>{children}</AuthProvider>
         {/* MiniPlayer is at root so it persists across all page navigations */}
         <MiniPlayer />
       </body>

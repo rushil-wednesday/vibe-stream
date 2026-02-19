@@ -1,9 +1,27 @@
 import { render, screen } from "@testing-library/react"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 
-import { Header } from "./Header"
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn() }),
+}))
 
-// TODO: mock useThemeStore so ThemeToggle renders without Zustand context
+vi.mock("store/useAuthStore", () => ({
+  useAuthStore: vi.fn((selector: (state: Record<string, unknown>) => unknown) =>
+    selector({
+      user: null,
+      isLoading: false,
+    })
+  ),
+}))
+
+vi.mock("lib/supabase/client", () => ({
+  createClient: () => ({
+    auth: { signOut: vi.fn().mockResolvedValue({}) },
+  }),
+}))
+
+const { Header } = await import("./Header")
+
 describe("Header", () => {
   it("renders the VibeStream wordmark (text split across two spans)", () => {
     render(<Header />)
