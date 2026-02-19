@@ -18,23 +18,26 @@ defaults:
 
 jobs:
   analyze:
+    permissions:
+      pull-requests: write
+      issues: write
     env:
       SKIP_ENV_VALIDATION: true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up node
-        uses: actions/setup-node@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: "20.x"
+          node-version-file: ".github/nodejs.version"
 
       - name: "Install pnpm & dependencies"
         uses: pnpm/action-setup@v4
         with:
           run_install: |
             - recursive: true
-            - args: [--frozen-lockfile]
+              args: [--frozen-lockfile]
 
       # - name: Install dependencies
       #   run: pnpm install --frozen-lockfile
