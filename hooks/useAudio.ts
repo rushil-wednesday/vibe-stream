@@ -40,8 +40,13 @@ export function useAudio() {
       })
 
       const offEnded = audio.on("ended", () => {
-        pause()
-        setProgress(0, audio.duration)
+        const { playNext, queue } = usePlayerStore.getState()
+        if (queue.length > 0) {
+          playNext()
+        } else {
+          pause()
+          setProgress(0, audio.duration)
+        }
       })
 
       // Sync audio element volume changes (e.g. mute toggle) back to the store
