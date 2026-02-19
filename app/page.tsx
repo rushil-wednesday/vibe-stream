@@ -1,65 +1,88 @@
-import { Metadata } from "next"
-import { Button } from "components/Button/Button"
+"use client"
 
-import { LP_GRID_ITEMS } from "lp-items"
+import React from "react"
 
-export const metadata: Metadata = {
-  twitter: {
-    card: "summary_large_image",
-  },
-  openGraph: {
-    url: "https://next-enterprise.vercel.app/",
-    images: [
-      {
-        width: 1200,
-        height: 630,
-        url: "https://raw.githubusercontent.com/Blazity/next-enterprise/main/.github/assets/project-logo.png",
-      },
-    ],
-  },
-}
+import { ChevronLeftIcon, ChevronRightIcon } from "assets/icons"
+import { Header } from "components/Header"
+import { SearchBar } from "components/SearchBar"
+import { SongCard, SongCardSkeleton } from "components/SongCard"
+import { useItunesSearch } from "hooks/useItunesSearch"
 
-export default function Web() {
+
+export default function HomePage() {
+  const { songs, isLoading, error, page, hasMore, search, nextPage, prevPage } = useItunesSearch()
+
+  const showPagination = !isLoading && !error && songs.length > 0 && (page > 1 || hasMore)
+
   return (
-    <>
-      <section className="bg-white dark:bg-gray-900">
-        <div className="mx-auto grid max-w-(--breakpoint-xl) px-4 py-8 text-center lg:py-16">
-          <div className="mx-auto place-self-center">
-            <h1 className="mb-4 max-w-2xl text-4xl leading-none font-extrabold tracking-tight md:text-5xl xl:text-6xl dark:text-white">
-              Next.js Enterprise Boilerplate
-            </h1>
-            <p className="mb-6 max-w-2xl font-light text-gray-500 md:text-lg lg:mb-8 lg:text-xl dark:text-gray-400">
-              Jumpstart your enterprise project with our feature-packed, high-performance Next.js boilerplate!
-              Experience rapid UI development, AI-powered code reviews, and an extensive suite of tools for a smooth and
-              enjoyable development process.
-            </p>
-            <Button href="https://github.com/Blazity/next-enterprise" className="mr-3">
-              Get started
-            </Button>
-            <Button
-              href="https://vercel.com/new/git/external?repository-url=https://github.com/Blazity/next-enterprise"
-              intent="secondary"
+    <div className="min-h-screen bg-[--bg-primary]">
+      <Header />
+
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+        {/* Search */}
+        <div className="mb-8 flex flex-col items-center gap-2">
+          <h1 className="text-2xl font-bold text-[--text-primary]">Discover Music</h1>
+          <p className="mb-4 text-sm text-[--text-secondary]">Search songs, artists, or albums</p>
+          <SearchBar onSearch={search} isLoading={isLoading} />
+        </div>
+
+        {/* Error state */}
+        {error && !isLoading && (
+          <div className="flex flex-col items-center gap-3 py-16 text-center">
+            <p className="text-lg font-medium text-gray-700 dark:text-gray-300">Something went wrong</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{error}</p>
+            <button
+              type="button"
+              onClick={() => search("")}
+              className="mt-2 rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-700 dark:bg-violet-500 dark:hover:bg-violet-400"
             >
-              Deploy Now
-            </Button>
+              Try again
+            </button>
           </div>
-        </div>
-      </section>
-      <section className="bg-white dark:bg-gray-900">
-        <div className="mx-auto max-w-(--breakpoint-xl) px-4 py-8 sm:py-16 lg:px-6">
-          <div className="justify-center space-y-8 md:grid md:grid-cols-2 md:gap-12 md:space-y-0 lg:grid-cols-3">
-            {LP_GRID_ITEMS.map((singleItem) => (
-              <div key={singleItem.title} className="flex flex-col items-center justify-center text-center">
-                <div className="bg-primary-100 dark:bg-primary-900 mb-4 flex size-10 items-center justify-center rounded-full p-1.5 text-blue-700 lg:size-12">
-                  {singleItem.icon}
-                </div>
-                <h3 className="mb-2 text-xl font-bold dark:text-white">{singleItem.title}</h3>
-                <p className="text-gray-500 dark:text-gray-400">{singleItem.description}</p>
-              </div>
-            ))}
+        )}
+
+        {/* Empty state */}
+        {!isLoading && !error && songs.length === 0 && (
+          <div className="flex flex-col items-center gap-2 py-16 text-center">
+            <p className="text-lg font-medium text-gray-700 dark:text-gray-300">No songs found</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Try a different search term</p>
           </div>
+        )}
+
+        {/* Song grid */}
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-4">
+          {isLoading
+            ? Array.from({ length: 20 }, (_, i) => <SongCardSkeleton key={i} />)
+            : songs.map((song) => <SongCard key={song.trackId} song={song} />)}
         </div>
-      </section>
-    </>
+
+        {/* Pagination */}
+        {showPagination && (
+          <div className="mt-8 flex items-center justify-center gap-3">
+            <button
+              type="button"
+              onClick={prevPage}
+              disabled={page <= 1}
+              className="flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-700 dark:bg-transparent dark:text-gray-300 dark:hover:bg-gray-800"
+            >
+              <ChevronLeftIcon />
+              Previous
+            </button>
+
+            <span className="min-w-[4rem] text-center text-sm text-gray-500 dark:text-gray-400">Page {page}</span>
+
+            <button
+              type="button"
+              onClick={nextPage}
+              disabled={!hasMore}
+              className="flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-700 dark:bg-transparent dark:text-gray-300 dark:hover:bg-gray-800"
+            >
+              Next
+              <ChevronRightIcon />
+            </button>
+          </div>
+        )}
+      </main>
+    </div>
   )
 }
