@@ -63,6 +63,10 @@ export const audio = {
     return audioInstance?.duration ?? 0
   },
 
+  get volume(): number {
+    return audioInstance?.volume ?? 1
+  },
+
   /**
    * Register an event listener on the underlying HTMLAudioElement.
    * Returns a cleanup function.
