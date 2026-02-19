@@ -2,19 +2,17 @@
 
 import React from "react"
 
+import { ChevronLeftIcon, ChevronRightIcon } from "assets/icons"
 import { Header } from "components/Header"
 import { SearchBar } from "components/SearchBar"
 import { SongCard, SongCardSkeleton } from "components/SongCard"
 import { useItunesSearch } from "hooks/useItunesSearch"
 
-/**
- * VibeStream homepage — song discovery with search.
- *
- * Renders the Header, a debounced SearchBar, and a responsive SongGrid.
- * Loading state shows skeleton cards; error state shows a retry prompt.
- */
+
 export default function HomePage() {
-  const { songs, isLoading, error, search } = useItunesSearch()
+  const { songs, isLoading, error, page, hasMore, search, nextPage, prevPage } = useItunesSearch()
+
+  const showPagination = !isLoading && !error && songs.length > 0 && (page > 1 || hasMore)
 
   return (
     <div className="min-h-screen bg-[--bg-primary]">
@@ -52,11 +50,38 @@ export default function HomePage() {
         )}
 
         {/* Song grid */}
-        <div className="group grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-4">
           {isLoading
             ? Array.from({ length: 20 }, (_, i) => <SongCardSkeleton key={i} />)
             : songs.map((song) => <SongCard key={song.trackId} song={song} />)}
         </div>
+
+        {/* Pagination */}
+        {showPagination && (
+          <div className="mt-8 flex items-center justify-center gap-3">
+            <button
+              type="button"
+              onClick={prevPage}
+              disabled={page <= 1}
+              className="flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-700 dark:bg-transparent dark:text-gray-300 dark:hover:bg-gray-800"
+            >
+              <ChevronLeftIcon />
+              Previous
+            </button>
+
+            <span className="min-w-[4rem] text-center text-sm text-gray-500 dark:text-gray-400">Page {page}</span>
+
+            <button
+              type="button"
+              onClick={nextPage}
+              disabled={!hasMore}
+              className="flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-700 dark:bg-transparent dark:text-gray-300 dark:hover:bg-gray-800"
+            >
+              Next
+              <ChevronRightIcon />
+            </button>
+          </div>
+        )}
       </main>
     </div>
   )
