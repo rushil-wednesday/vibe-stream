@@ -4,12 +4,146 @@ import React, { useState } from "react"
 
 import Image from "next/image"
 
-import { ChevronDownIcon, PauseIcon, PlayIcon, SkipBack10Icon, SkipForward10Icon, VolumeIcon } from "assets/icons"
+import { ChevronDownIcon, PauseIcon, PlayIcon, VolumeIcon } from "assets/icons"
 import { Slider } from "components/ui/Slider"
 import { ARTWORK_SIZE_LARGE, ARTWORK_SIZE_SMALL, SKIP_SECONDS } from "constants/player"
 import { useAudio } from "hooks/useAudio"
 import { usePlayerStore } from "store/usePlayerStore"
 import { getArtworkUrl } from "types/itunes"
+
+function SkipButton({
+  direction,
+  onClick,
+  className = "",
+  iconClassName = "h-6 w-6",
+  ariaLabel,
+}: {
+  direction: "back" | "forward"
+  onClick: () => void
+  className?: string
+  iconClassName?: string
+  ariaLabel: string
+}) {
+  const [animKey, setAnimKey] = useState(0)
+  const isBack = direction === "back"
+
+  function handleClick(e: React.MouseEvent) {
+    e.stopPropagation()
+    onClick()
+    setAnimKey((k) => k + 1)
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={handleClick}
+      aria-label={ariaLabel}
+      className={[
+        "relative flex shrink-0 items-center justify-center overflow-hidden rounded-full",
+        "text-gray-600 dark:text-gray-400",
+        "ring-1 ring-gray-300 hover:bg-gray-100 dark:ring-gray-700 dark:hover:bg-gray-800",
+        "transition-colors",
+        className,
+      ].join(" ")}
+    >
+      {/* Ripple — mounted fresh each click so the animation restarts */}
+      {animKey > 0 && (
+        <span
+          key={`ripple-${animKey}`}
+          className="pointer-events-none absolute inset-0 rounded-full bg-violet-400/25"
+          style={{ animation: "skipRipple 0.4s ease-out forwards" }}
+        />
+      )}
+
+      {/* Arc-arrow SVG — re-keyed each click to restart the nudge animation */}
+      <svg
+        key={`icon-${animKey}`}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className={iconClassName}
+        style={animKey > 0 ? { animation: `${isBack ? "skipNudgeLeft" : "skipNudgeRight"} 0.35s ease-out` } : undefined}
+        aria-hidden="true"
+      >
+        {isBack ? (
+          <>
+            <path d="M1 4v6h6" />
+            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+          </>
+        ) : (
+          <>
+            <path d="M23 4v6h-6" />
+            <path d="M20.49 15a9 9 0 1 1-2.13-9.36L23 10" />
+          </>
+        )}
+      </svg>
+
+      {/* "10" label — separate HTML element for better font rendering */}
+      <span className="pointer-events-none absolute inset-0 flex items-center justify-center select-none">
+        <span className="text-[8px] leading-none font-bold">10</span>
+      </span>
+    </button>
+  )
+}
+
+/**
+ * Shared playback controls — skip back, play/pause, skip forward.
+ * Accepts a `variant` to render compact (minimised bar) or full (expanded panel) sizing.
+ */
+function PlaybackControls({
+  variant,
+  isPlaying,
+  onPlayPause,
+  onSkipBack,
+  onSkipForward,
+}: {
+  variant: "compact" | "full"
+  isPlaying: boolean
+  onPlayPause: React.MouseEventHandler<HTMLButtonElement>
+  onSkipBack: () => void
+  onSkipForward: () => void
+}) {
+  const isCompact = variant === "compact"
+
+  return (
+    <div className={isCompact ? "flex items-center gap-1" : "flex items-center justify-center gap-6 md:gap-4"}>
+      <SkipButton
+        direction="back"
+        onClick={onSkipBack}
+        ariaLabel="Skip back 10 seconds"
+        className={isCompact ? "h-9 w-9" : "h-[54px] w-[54px] md:h-12 md:w-12"}
+        iconClassName={isCompact ? "h-5 w-5" : "h-7 w-7 md:h-6 md:w-6"}
+      />
+
+      <button
+        type="button"
+        onClick={onPlayPause}
+        aria-label={isPlaying ? "Pause" : "Play"}
+        className={[
+          "flex shrink-0 items-center justify-center rounded-full bg-violet-600 text-white hover:bg-violet-700 focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:outline-none dark:bg-violet-500 dark:hover:bg-violet-400",
+          isCompact ? "h-10 w-10" : "h-[72px] w-[72px] shadow-md md:h-12 md:w-12",
+        ].join(" ")}
+      >
+        {isPlaying ? (
+          <PauseIcon className={isCompact ? "h-5 w-5" : "h-8 w-8 md:h-5 md:w-5"} />
+        ) : (
+          <PlayIcon className={isCompact ? "h-5 w-5" : "h-8 w-8 md:h-5 md:w-5"} />
+        )}
+      </button>
+
+      <SkipButton
+        direction="forward"
+        onClick={onSkipForward}
+        ariaLabel="Skip forward 10 seconds"
+        className={isCompact ? "h-9 w-9" : "h-[54px] w-[54px] md:h-12 md:w-12"}
+        iconClassName={isCompact ? "h-5 w-5" : "h-7 w-7 md:h-6 md:w-6"}
+      />
+    </div>
+  )
+}
 
 function formatTime(seconds: number): string {
   if (!isFinite(seconds) || seconds < 0) return "0:00"
@@ -104,43 +238,16 @@ export function MiniPlayer() {
             </div>
 
             {/* Controls — skip back, play/pause, skip forward */}
-            <div className="flex items-center gap-1">
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  handleSkip(-SKIP_SECONDS)
-                }}
-                aria-label="Skip back 10 seconds"
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
-              >
-                <SkipBack10Icon />
-              </button>
-
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  handlePlayPause()
-                }}
-                aria-label={isPlaying ? "Pause" : "Play"}
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-violet-600 text-white hover:bg-violet-700 focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:outline-none dark:bg-violet-500 dark:hover:bg-violet-400"
-              >
-                {isPlaying ? <PauseIcon /> : <PlayIcon />}
-              </button>
-
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  handleSkip(SKIP_SECONDS)
-                }}
-                aria-label="Skip forward 10 seconds"
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
-              >
-                <SkipForward10Icon />
-              </button>
-            </div>
+            <PlaybackControls
+              variant="compact"
+              isPlaying={isPlaying}
+              onPlayPause={(e) => {
+                e.stopPropagation()
+                handlePlayPause()
+              }}
+              onSkipBack={() => handleSkip(-SKIP_SECONDS)}
+              onSkipForward={() => handleSkip(SKIP_SECONDS)}
+            />
           </div>
         </div>
 
@@ -196,38 +303,13 @@ export function MiniPlayer() {
             </div>
 
             {/* Playback controls — centred, 50% larger on mobile */}
-            <div className="flex items-center justify-center gap-6 md:gap-4">
-              <button
-                type="button"
-                onClick={() => handleSkip(-SKIP_SECONDS)}
-                aria-label="Skip back 10 seconds"
-                className="flex h-[54px] w-[54px] items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 md:h-9 md:w-9 dark:text-gray-400 dark:hover:bg-gray-800"
-              >
-                <SkipBack10Icon className="h-7 w-7 md:h-6 md:w-6" />
-              </button>
-
-              <button
-                type="button"
-                onClick={handlePlayPause}
-                aria-label={isPlaying ? "Pause" : "Play"}
-                className="flex h-[72px] w-[72px] items-center justify-center rounded-full bg-violet-600 text-white shadow-md hover:bg-violet-700 focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:outline-none md:h-12 md:w-12 dark:bg-violet-500 dark:hover:bg-violet-400"
-              >
-                {isPlaying ? (
-                  <PauseIcon className="h-8 w-8 md:h-5 md:w-5" />
-                ) : (
-                  <PlayIcon className="h-8 w-8 md:h-5 md:w-5" />
-                )}
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleSkip(SKIP_SECONDS)}
-                aria-label="Skip forward 10 seconds"
-                className="flex h-[54px] w-[54px] items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 md:h-9 md:w-9 dark:text-gray-400 dark:hover:bg-gray-800"
-              >
-                <SkipForward10Icon className="h-7 w-7 md:h-6 md:w-6" />
-              </button>
-            </div>
+            <PlaybackControls
+              variant="full"
+              isPlaying={isPlaying}
+              onPlayPause={handlePlayPause}
+              onSkipBack={() => handleSkip(-SKIP_SECONDS)}
+              onSkipForward={() => handleSkip(SKIP_SECONDS)}
+            />
 
             {/* Volume */}
             <div className="flex w-full items-center gap-2">
