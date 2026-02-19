@@ -3,10 +3,10 @@
 import React from "react"
 
 import { ThemeToggle } from "components/ThemeToggle"
+import { UserMenu } from "components/UserMenu"
 
 /**
- * Top navigation bar with the VibeStream wordmark and the theme toggle.
- * Kept purposefully minimal for MVP — no nav links or user menu.
+ * Top navigation bar with the VibeStream wordmark, theme toggle, and user menu.
  */
 export function Header() {
   return (
@@ -36,7 +36,10 @@ export function Header() {
           </span>
         </div>
 
-        <ThemeToggle />
+        <div className="flex items-center gap-3">
+          <ThemeToggle />
+          <UserMenu />
+        </div>
       </div>
     </header>
   )
