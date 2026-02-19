@@ -1,11 +1,11 @@
 "use client"
 
-import React from "react"
-
 import Image from "next/image"
+import React from "react"
 
 import { PauseIcon, PlayIcon } from "assets/icons"
 import { Card } from "components/ui/Card"
+import { ARTWORK_SIZE_CARD, EQ_BAR_BASE_DURATION, EQ_BAR_BASE_HEIGHT, EQ_BAR_DURATION_INCREMENT, EQ_BAR_HEIGHT_INCREMENT } from "constants/player"
 import { Skeleton } from "components/ui/Skeleton"
 import { usePlayerStore } from "store/usePlayerStore"
 import { getArtworkUrl } from "types/itunes"
@@ -40,7 +40,7 @@ export function SongCard({ song }: SongCardProps) {
     }
   }
 
-  const artworkSrc = getArtworkUrl(song.artworkUrl100, 300)
+  const artworkSrc = getArtworkUrl(song.artworkUrl100, ARTWORK_SIZE_CARD)
 
   return (
     <Card
@@ -49,7 +49,7 @@ export function SongCard({ song }: SongCardProps) {
       role="button"
       tabIndex={0}
       aria-label={`${isThisPlaying ? "Pause" : "Play"} ${song.trackName} by ${song.artistName}`}
-      onKeyDown={(e) => e.key === "Enter" && play(song)}
+      onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && play(song)}
     >
       {/* Artwork */}
       <div className="relative aspect-square w-full overflow-hidden bg-gray-100 dark:bg-gray-800">
@@ -82,8 +82,8 @@ export function SongCard({ song }: SongCardProps) {
                 key={bar}
                 className="w-[3px] rounded-sm bg-white"
                 style={{
-                  height: `${8 + bar * 4}px`,
-                  animation: `equalizerBar ${0.5 + bar * 0.15}s ease-in-out infinite alternate`,
+                  height: `${EQ_BAR_BASE_HEIGHT + bar * EQ_BAR_HEIGHT_INCREMENT}px`,
+                  animation: `equalizerBar ${EQ_BAR_BASE_DURATION + bar * EQ_BAR_DURATION_INCREMENT}s ease-in-out infinite alternate`,
                 }}
               />
             ))}
