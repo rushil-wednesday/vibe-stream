@@ -11,6 +11,8 @@ export interface PlayerState {
   duration: number
   /** Volume 0–1 */
   volume: number
+  /** Upcoming songs queue (e.g. from a playlist) */
+  queue: ITunesSong[]
 
   play: (song: ITunesSong) => void
   pause: () => void
@@ -18,6 +20,9 @@ export interface PlayerState {
   seek: (fraction: number) => void
   setVolume: (vol: number) => void
   setProgress: (progress: number, duration: number) => void
+  setQueue: (songs: ITunesSong[]) => void
+  playNext: () => void
+  clearQueue: () => void
   reset: () => void
 }
 
@@ -33,6 +38,7 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
   progress: 0,
   duration: 0,
   volume: 1,
+  queue: [],
 
   play: (song) => {
     const current = get().currentSong
@@ -59,5 +65,16 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
 
   setProgress: (progress, duration) => set({ progress, duration }),
 
-  reset: () => set({ currentSong: null, isPlaying: false, progress: 0, duration: 0 }),
+  setQueue: (songs) => set({ queue: songs }),
+
+  playNext: () => {
+    const [next, ...rest] = get().queue
+    if (next) {
+      set({ currentSong: next, isPlaying: true, progress: 0, duration: 0, queue: rest })
+    }
+  },
+
+  clearQueue: () => set({ queue: [] }),
+
+  reset: () => set({ currentSong: null, isPlaying: false, progress: 0, duration: 0, queue: [] }),
 }))
