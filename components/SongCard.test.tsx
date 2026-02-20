@@ -1,12 +1,13 @@
 import { fireEvent, render, screen } from "@testing-library/react"
-import { describe, expect, it, vi } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 
+import type { PlayerState } from "store/usePlayerStore"
+import { usePlayerStore } from "store/usePlayerStore"
 import type { ITunesSong } from "types/itunes"
 import { SongCard, SongCardSkeleton } from "./SongCard"
 
-// TODO: mock usePlayerStore to isolate from Zustand
 vi.mock("store/usePlayerStore", () => ({
-  usePlayerStore: vi.fn((selector) =>
+  usePlayerStore: vi.fn((selector: (state: Partial<PlayerState>) => unknown) =>
     selector({
       currentSong: null,
       isPlaying: false,
@@ -29,31 +30,87 @@ const mockSong: ITunesSong = {
   releaseDate: "2024-01-01T00:00:00Z",
 }
 
+const mockPlay = vi.fn()
+const mockPause = vi.fn()
+const mockResume = vi.fn()
+
+function setMockPlayerState(overrides: Partial<PlayerState> = {}) {
+  const state = {
+    currentSong: null,
+    isPlaying: false,
+    play: mockPlay,
+    pause: mockPause,
+    resume: mockResume,
+    ...overrides,
+  } as unknown as PlayerState
+  vi.mocked(usePlayerStore).mockImplementation(((selector: (state: PlayerState) => unknown) =>
+    selector(state)) as typeof usePlayerStore)
+}
+
 describe("SongCard", () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    setMockPlayerState()
+  })
+
   it("renders track name and artist", () => {
     render(<SongCard song={mockSong} />)
     expect(screen.getByText("Test Song")).toBeInTheDocument()
     expect(screen.getByText("Test Artist")).toBeInTheDocument()
   })
 
-  it("has an accessible play button", () => {
+  it("has an accessible play button that is always visible", () => {
     render(<SongCard song={mockSong} />)
-    expect(screen.getByRole("button", { name: /play test song/i })).toBeInTheDocument()
+    const playButton = screen.getByRole("button", { name: "Play" })
+    expect(playButton).toBeInTheDocument()
+    expect(playButton).toBeVisible()
   })
 
-  it("responds to Enter and Space keyboard events", () => {
+  it("shows pause icon when this song is playing", () => {
+    setMockPlayerState({ currentSong: mockSong, isPlaying: true })
+    render(<SongCard song={mockSong} />)
+    expect(screen.getByRole("button", { name: "Pause" })).toBeInTheDocument()
+  })
+
+  it("shows play icon when a different song is playing", () => {
+    setMockPlayerState({ currentSong: { ...mockSong, trackId: 999 }, isPlaying: true })
+    render(<SongCard song={mockSong} />)
+    expect(screen.getByRole("button", { name: "Play" })).toBeInTheDocument()
+  })
+
+  it("calls pause when clicking the button on a playing song", () => {
+    setMockPlayerState({ currentSong: mockSong, isPlaying: true })
+    render(<SongCard song={mockSong} />)
+    fireEvent.click(screen.getByRole("button", { name: "Pause" }))
+    expect(mockPause).toHaveBeenCalledOnce()
+  })
+
+  it("calls resume when clicking the button on a paused current song", () => {
+    setMockPlayerState({ currentSong: mockSong, isPlaying: false })
+    render(<SongCard song={mockSong} />)
+    fireEvent.click(screen.getByRole("button", { name: "Play" }))
+    expect(mockResume).toHaveBeenCalledOnce()
+  })
+
+  it("calls play when clicking the button on a non-current song", () => {
+    setMockPlayerState({ currentSong: null, isPlaying: false })
+    render(<SongCard song={mockSong} />)
+    fireEvent.click(screen.getByRole("button", { name: "Play" }))
+    expect(mockPlay).toHaveBeenCalledWith(mockSong)
+  })
+
+  it("responds to Enter and Space keyboard events on the card", () => {
     render(<SongCard song={mockSong} />)
     const card = screen.getByRole("button", { name: /play test song/i })
     fireEvent.keyDown(card, { key: "Enter" })
     fireEvent.keyDown(card, { key: " " })
-    // TODO: assert play was called when mock is fully wired
+    expect(mockPlay).toHaveBeenCalledTimes(2)
   })
 })
 
 describe("SongCardSkeleton", () => {
   it("renders skeleton placeholders", () => {
     const { container } = render(<SongCardSkeleton />)
-    // TODO: assert skeleton aria-hidden elements are present
     expect(container.firstChild).toBeInTheDocument()
   })
 })
