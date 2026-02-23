@@ -23,6 +23,8 @@
     "e2e:ui": "playwright test --ui",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "postinstall": "npx patch-package -y",
+    "dev:server": "cd server && npm run start:local",
+    "dev:all": "concurrently --names next,api \"pnpm dev\" \"pnpm dev:server\"",
     "coupling-graph": "npx madge --extensions js,jsx,ts,tsx,css,md,mdx ./ --exclude '.next|tailwind.config.js|reset.d.ts|prettier.config.js|postcss.config.js|playwright.config.ts|next.config.js|next-env.d.ts|instrumentation.ts|e2e/|README.md|.storybook/|.eslintrc.js' --image graph.svg"
   },
   "dependencies": {
@@ -94,6 +96,7 @@
     "@vitejs/plugin-react": "^4.7.0",
     "@vitest/ui": "^3.2.4",
     "all-contributors-cli": "^6.26.1",
+    "concurrently": "^9.2.1",
     "cross-env": "^7.0.3",
     "eslint": "^9.26.0",
     "eslint-config-next": "15.3.8",
