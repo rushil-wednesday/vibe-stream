@@ -1,0 +1,18 @@
+# Eslint
+.eslintrc.js
+
+
+# Jest
+jest.config.js
+jest.setup.js
+
+# Dependency directories
+node_modules/
+__mocks__
+dist
+metrics
+reports
+
+# configs
+*.config.js
+
