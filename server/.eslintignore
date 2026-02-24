@@ -1,0 +1,12 @@
+# Jest
+jest.setup.js
+
+# Dependency directories
+node_modules/
+__mocks__
+dist
+metrics
+reports
+
+# configs
+*.config.js
