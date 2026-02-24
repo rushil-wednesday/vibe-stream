@@ -4,7 +4,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 import type { PlayerState } from "store/usePlayerStore"
 import { usePlayerStore } from "store/usePlayerStore"
 import type { ITunesSong } from "types/itunes"
+
 import { SongCard, SongCardSkeleton } from "./SongCard"
+
+let mockUser: { id: string } | null = null
 
 vi.mock("store/usePlayerStore", () => ({
   usePlayerStore: vi.fn((selector: (state: Partial<PlayerState>) => unknown) =>
@@ -15,6 +18,18 @@ vi.mock("store/usePlayerStore", () => ({
       pause: vi.fn(),
       resume: vi.fn(),
     })
+  ),
+}))
+
+vi.mock("store/useAuthStore", () => ({
+  useAuthStore: vi.fn((selector) => selector({ user: mockUser })),
+}))
+
+vi.mock("components/playlist/AddToPlaylistModal", () => ({
+  AddToPlaylistModal: ({ onClose }: { onClose: () => void }) => (
+    <div data-testid="playlist-modal">
+      <button onClick={onClose}>Close</button>
+    </div>
   ),
 }))
 
@@ -51,6 +66,7 @@ describe("SongCard", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     setMockPlayerState()
+    mockUser = null
   })
 
   it("renders track name and artist", () => {
@@ -105,6 +121,24 @@ describe("SongCard", () => {
     fireEvent.keyDown(card, { key: "Enter" })
     fireEvent.keyDown(card, { key: " " })
     expect(mockPlay).toHaveBeenCalledTimes(2)
+  })
+
+  it("does not show add-to-playlist button when not authenticated", () => {
+    render(<SongCard song={mockSong} />)
+    expect(screen.queryByRole("button", { name: "Add to playlist" })).not.toBeInTheDocument()
+  })
+
+  it("shows add-to-playlist button when authenticated", () => {
+    mockUser = { id: "user-1" }
+    render(<SongCard song={mockSong} />)
+    expect(screen.getByRole("button", { name: "Add to playlist" })).toBeInTheDocument()
+  })
+
+  it("opens playlist modal when add button is clicked", () => {
+    mockUser = { id: "user-1" }
+    render(<SongCard song={mockSong} />)
+    fireEvent.click(screen.getByRole("button", { name: "Add to playlist" }))
+    expect(screen.getByTestId("playlist-modal")).toBeInTheDocument()
   })
 })
 
