@@ -23,6 +23,7 @@ describe("usePlayerStore", () => {
       progress: 0,
       duration: 0,
       volume: 1,
+      queue: [],
     })
   })
 
@@ -80,5 +81,44 @@ describe("usePlayerStore", () => {
     expect(state.currentSong).toBeNull()
     expect(state.isPlaying).toBe(false)
     expect(state.progress).toBe(0)
+  })
+
+  it("setQueue() replaces the queue", () => {
+    const song2: ITunesSong = { ...mockSong, trackId: 99, trackName: "Song 2" }
+    usePlayerStore.getState().setQueue([mockSong, song2])
+    expect(usePlayerStore.getState().queue).toHaveLength(2)
+    expect(usePlayerStore.getState().queue[0]?.trackId).toBe(42)
+    expect(usePlayerStore.getState().queue[1]?.trackId).toBe(99)
+  })
+
+  it("playNext() shifts first song from queue and plays it", () => {
+    const song2: ITunesSong = { ...mockSong, trackId: 99, trackName: "Song 2" }
+    usePlayerStore.setState({ queue: [mockSong, song2] })
+    usePlayerStore.getState().playNext()
+    const state = usePlayerStore.getState()
+    expect(state.currentSong?.trackId).toBe(42)
+    expect(state.isPlaying).toBe(true)
+    expect(state.progress).toBe(0)
+    expect(state.queue).toHaveLength(1)
+    expect(state.queue[0]?.trackId).toBe(99)
+  })
+
+  it("playNext() does nothing when queue is empty", () => {
+    usePlayerStore.setState({ currentSong: mockSong, isPlaying: true, queue: [] })
+    usePlayerStore.getState().playNext()
+    expect(usePlayerStore.getState().currentSong?.trackId).toBe(42)
+    expect(usePlayerStore.getState().isPlaying).toBe(true)
+  })
+
+  it("clearQueue() empties the queue", () => {
+    usePlayerStore.setState({ queue: [mockSong] })
+    usePlayerStore.getState().clearQueue()
+    expect(usePlayerStore.getState().queue).toEqual([])
+  })
+
+  it("reset() also clears the queue", () => {
+    usePlayerStore.setState({ currentSong: mockSong, queue: [mockSong] })
+    usePlayerStore.getState().reset()
+    expect(usePlayerStore.getState().queue).toEqual([])
   })
 })

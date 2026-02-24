@@ -7,6 +7,7 @@ import Image from "next/image"
 import { ChevronDownIcon, PauseIcon, PlayIcon, VolumeIcon } from "assets/icons"
 import { Slider } from "components/ui/Slider"
 import { ARTWORK_SIZE_LARGE, ARTWORK_SIZE_SMALL, SKIP_SECONDS } from "constants/player"
+import { QUEUE_DISPLAY_COUNT } from "constants/playlist"
 import { useAudio } from "hooks/useAudio"
 import { usePlayerStore } from "store/usePlayerStore"
 import { getArtworkUrl } from "types/itunes"
@@ -164,7 +165,7 @@ function formatTime(seconds: number): string {
 export function MiniPlayer() {
   useAudio()
 
-  const { currentSong, isPlaying, progress, duration, volume, pause, resume, seek, setVolume } = usePlayerStore()
+  const { currentSong, isPlaying, progress, duration, volume, queue, pause, resume, seek, setVolume } = usePlayerStore()
   const [expanded, setExpanded] = useState(false)
 
   if (!currentSong) return null
@@ -200,8 +201,9 @@ export function MiniPlayer() {
           "fixed right-0 bottom-0 left-0 z-50",
           "border-t border-gray-200 dark:border-gray-800",
           "bg-white/95 dark:bg-gray-950/95",
-          "overflow-hidden backdrop-blur-md",
+          "backdrop-blur-md",
           "transition-[max-height] duration-300 ease-in-out",
+          expanded ? "overflow-y-auto" : "overflow-hidden",
           expanded ? "max-h-[92dvh] md:max-h-[560px]" : "max-h-[68px]",
         ].join(" ")}
       >
@@ -328,6 +330,38 @@ export function MiniPlayer() {
                 {Math.round(volume * 100)}%
               </span>
             </div>
+
+            {/* Up Next — shows upcoming songs from queue */}
+            {queue.length > 0 && (
+              <div className="flex w-full flex-col gap-2">
+                <p className="text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">
+                  Up Next
+                </p>
+                <ul className="flex flex-col gap-1">
+                  {queue.slice(0, QUEUE_DISPLAY_COUNT).map((song, i) => (
+                    <li
+                      key={`${song.trackId}-${i}`}
+                      className="flex items-center gap-3 rounded-lg px-2 py-1.5 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
+                    >
+                      <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded">
+                        <Image
+                          src={getArtworkUrl(song.artworkUrl100, ARTWORK_SIZE_SMALL)}
+                          alt=""
+                          fill
+                          sizes="32px"
+                          className="object-cover"
+                          unoptimized
+                        />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm text-gray-900 dark:text-gray-100">{song.trackName}</p>
+                        <p className="truncate text-xs text-gray-500 dark:text-gray-400">{song.artistName}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         )}
       </div>
