@@ -34,3 +34,9 @@ storybook-static/
 /playwright/.cache/
 
 /.npm-only-allow*.tsbuildinfo
+
+# Server backend
+server/node_modules
+server/dist
+server/.env.*
+!server/.env.example
